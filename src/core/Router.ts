@@ -19,12 +19,15 @@ export class Router extends Emitter<Events> {
 
   constructor() {
     super();
+    // Everything up to and including the final slash is the mount point; the
+    // last segment is a route of ours only if it is a known slug.
+    //
+    // An *unknown* last segment must not be mistaken for a mount point. The
+    // host rewrites every unmatched path to index.html, so the old reading
+    // made /impressum the base and turned each subsequent division link into
+    // /impressum/asset-management.
     const path = window.location.pathname;
-    const last = path.slice(path.lastIndexOf('/') + 1);
-    // Anything after the final slash that is a known slug is *our* route,
-    // everything before it is the mount point.
-    this.base = SLUGS.has(last) ? path.slice(0, path.lastIndexOf('/') + 1) : path;
-    if (!this.base.endsWith('/')) this.base += '/';
+    this.base = path.slice(0, path.lastIndexOf('/') + 1) || '/';
 
     window.addEventListener('popstate', this.onPop);
   }

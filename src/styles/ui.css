@@ -168,7 +168,6 @@
 }
 
 .hs {
-  --dist-scale: 1;
   position: absolute;
   left: 0;
   top: 0;
@@ -186,13 +185,9 @@
     );
 }
 
-/* Between the tile grid breakpoint and a comfortable desktop the ring would
-   push the side labels off screen, so it is drawn in. */
-@media (max-width: 1180px) {
-  .hs {
-    --dist-scale: 0.76;
-  }
-}
+/* --dist-scale is solved per viewport in Camera.solveRing and published by
+   App.publishLayout — the ring is pulled in exactly as far as it needs to be,
+   rather than by a fixed amount at a guessed breakpoint. */
 
 /* ------------------------------------------------- detail view: the rail ---
    In the detail view the globe has swelled and dropped, so the annotation ring
@@ -209,7 +204,11 @@
   transform: translateX(-50%);
   display: flex;
   justify-content: center;
-  gap: clamp(6px, 1.4vw, 18px);
+  align-items: center;
+  /* Flex spaces the layout boxes, but a turned square paints √2 wider than its
+     box — so the gap has to absorb 0.414 of the edge before any of it reads as
+     space between the settings. */
+  gap: clamp(14px, 6.4vw, 34px);
 }
 
 #hotspots.is-rail .hs {
@@ -230,16 +229,22 @@
   display: none;
 }
 
+/* Sized so six always fit the rail's own width. At 68 px fixed the row was
+   408 px wide plus gaps, which ran off both edges of a phone — and since the
+   body never scrolls, the first and last divisions became unreachable rather
+   than merely clipped. */
 #hotspots.is-rail .hs__glyph {
-  width: 68px;
-  height: 68px;
+  /* Sized on the diagonal, not the edge: six turned squares occupy
+     6 x edge x √2, which is what has to fit the rail's width. */
+  width: clamp(30px, calc(10.2vw - 4px), 50px);
+  height: clamp(30px, calc(10.2vw - 4px), 50px);
   margin-top: 0;
-  border-radius: 14px;
+  border-radius: 3px;
 }
 
 #hotspots.is-rail .hs__glyph svg {
-  width: 47px;
-  height: 47px;
+  width: 54%;
+  height: 54%;
 }
 
 /* The rail occupies the footer's line, and at this altitude the strapline has
@@ -276,56 +281,79 @@ html[data-stage='detail'] #footer {
     letter-spacing 0.5s var(--ease-out);
 }
 
-/* The icon, framed as in the reference artwork: an outer border in the
-   division's accent and a second, inset frame. Deliberately unfilled so it
-   still reads as an instrument marking rather than an app button. */
+/* ------------------------------------------------------------ the setting ---
+   The mark is set in a diamond, not a box.
+
+   The crown in the wordmark is a faceted, angular form; a rounded rectangle
+   shares nothing with it. A square turned on its point does, and it gives the
+   marks a common setting the way a stone is set — outer girdle, inner facet,
+   the mark itself upright inside both.
+
+   The stroke is held at a constant device width by non-scaling-stroke rather
+   than by hand-tuning a number per context. Lucide is authored on a 24 unit
+   grid, so without it the same mark would come out at three different weights
+   on the ring, in the grid and down in the rail. Only the setting's size is
+   ever overridden; everything inside follows from it. */
 .hs__glyph {
   position: relative;
-  width: 80px;
-  height: 80px;
+  width: 62px;
+  height: 62px;
   display: grid;
   place-items: center;
   margin-top: 3px;
   border: 1px solid color-mix(in srgb, var(--hs-accent-lit) 62%, transparent);
-  border-radius: 13px;
+  border-radius: 4px;
   background: linear-gradient(
     160deg,
     color-mix(in srgb, var(--hs-accent) 14%, transparent),
     transparent 64%
   );
   box-shadow: 0 0 18px -12px var(--hs-accent-lit);
+  transform: rotate(45deg);
   transition:
+    transform 0.85s var(--ease-in-out),
     border-color 0.4s var(--ease-out),
     box-shadow 0.5s var(--ease-out),
     background 0.4s var(--ease-out);
 }
 
+/* The inner facet. */
 .hs__glyph::before {
   content: '';
   position: absolute;
   inset: 4px;
   border: 1px solid var(--hs-accent);
-  border-radius: 9px;
+  border-radius: 2px;
   opacity: 0.42;
   transition: opacity 0.4s var(--ease-out);
 }
 
 /* The mark itself is pure white and stays that way at rest. Dimming it was
    what made these hard to read: at 62 % on a near-black field a 2 px stroke
-   simply has no contrast left. Hover now signals with glow, not brightness. */
+   simply has no contrast left. Hover signals with glow, not brightness.
+
+   Counter-rotated so it stands upright inside the setting — and it keeps
+   standing upright while the setting turns. */
 .hs__glyph svg {
-  width: 56px;
-  height: 56px;
-  /* Authored at 48 units. The larger render size buys back the weight that had
-     to be given up when the crane's lattice was turning to mush. */
-  stroke-width: 2.1;
+  /* Sized off the setting, and kept inside the diamond's inscribed square
+     (a turned square only offers 1/√2 of its edge to something upright). */
+  width: 57%;
+  height: 57%;
+  stroke-width: 1.7;
+  vector-effect: non-scaling-stroke;
   color: var(--text);
   filter: drop-shadow(0 0 5px rgba(190, 226, 255, 0.28));
-  transition: filter 0.4s var(--ease-out);
+  transform: rotate(-45deg);
+  transition:
+    transform 0.85s var(--ease-in-out),
+    filter 0.4s var(--ease-out);
 }
 
+/* A quarter turn, and it comes to rest as a diamond again. The stone catches
+   the light because you looked at it — not because it never stops moving. */
 .hs.is-hot .hs__glyph,
 .hs:focus-visible .hs__glyph {
+  transform: rotate(135deg);
   border-color: var(--hs-accent-lit);
   box-shadow: 0 0 26px -6px var(--hs-accent-lit);
   background: linear-gradient(
@@ -335,15 +363,17 @@ html[data-stage='detail'] #footer {
   );
 }
 
+.hs.is-hot .hs__glyph svg,
+.hs:focus-visible .hs__glyph svg {
+  transform: rotate(-135deg);
+  filter: drop-shadow(0 0 9px rgba(190, 226, 255, 0.75));
+}
+
 .hs.is-hot .hs__glyph::before,
 .hs:focus-visible .hs__glyph::before {
   opacity: 0.9;
 }
 
-.hs.is-hot .hs__glyph svg,
-.hs:focus-visible .hs__glyph svg {
-  filter: drop-shadow(0 0 9px rgba(190, 226, 255, 0.75));
-}
 
 /* A rule that grows out of the type towards the globe on hover. */
 /* Grows symmetrically out of the centre on hover, matching the centred column
@@ -864,55 +894,112 @@ html[data-stage='detail'] #footer {
   }
 }
 
-/* Below this width the polar ring would run off both edges, so the tiles
-   become a grid under the globe instead. The globe itself is lifted by the
-   camera fit, which constrains on width as well as height. */
-@media (max-width: 760px) {
-  #hotspots {
-    left: 0;
-    top: auto;
-    bottom: 0;
-    width: 100vw;
-    height: auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px 4px;
-    padding: 0 12px calc(var(--pad-y) + 26px);
+/* ------------------------------------------------------- layout: the grid ---
+   When the ring cannot clear the globe and stay in frame, the tiles drop into
+   a grid under it instead.
+
+   Positioned *inside* #stage rather than fixed to the viewport. #ui is a three
+   row grid (header / stage / footer), so anchoring to the stage's bottom edge
+   makes the footer's row reserve its own space — the two can no longer be
+   dealt the same pixels, which is what put the partner lockup straight through
+   the bottom row of icons. */
+
+html[data-layout='grid'] #hotspots:not(.is-rail) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: 0;
+  /* Capped and centred. Left to span the full width the three columns pull
+     apart on a tablet until the icons read as six unrelated objects rather
+     than one group. */
+  width: auto;
+  max-width: min(100%, 560px);
+  margin-inline: auto;
+  height: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* Row gap and bottom padding both clear the turned settings' corners, which
+     reach (√2−1)/2 of the edge past the layout box on every side. */
+  gap: 24px 4px;
+  padding: 0 12px 26px;
+}
+
+/* Lifts the tiles off the globe's lower limb so the type never sits on a
+   moving field of particles. Anchored to the viewport rather than to the tile
+   block: ending it at the block's edge left a visible horizontal seam where
+   the scrim stopped and the starfield resumed, just above the footer. */
+html[data-layout='grid'] #hotspots:not(.is-rail)::before {
+  content: '';
+  position: fixed;
+  inset: auto 0 0 0;
+  height: min(56vh, 460px);
+  background: linear-gradient(to top, var(--bg-void) 62%, transparent);
+  z-index: -1;
+  pointer-events: none;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs {
+  position: static;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  transform: none;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph {
+  width: clamp(38px, 11vw, 50px);
+  height: clamp(38px, 11vw, 50px);
+  border-radius: 3px;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph::before {
+  inset: 3px;
+  border-radius: 2px;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph svg {
+  width: 54%;
+  height: 54%;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__name {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__in {
+  gap: 5px;
+}
+
+html[data-layout='grid'] #footer {
+  font-size: 9px;
+}
+
+html[data-layout='grid'] #footer-partner {
+  margin-bottom: 14px;
+}
+
+/* Landscape phones: two rows of three would eat the whole frame, so the six
+   run as a single row and the labels stand down — the glyphs carry it. */
+@media (max-height: 520px) {
+  html[data-layout='grid'] #hotspots:not(.is-rail) {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0 4px;
   }
 
-  #hotspots::before {
-    content: '';
-    position: absolute;
-    inset: -60px 0 0;
-    background: linear-gradient(to top, var(--bg-void) 42%, transparent);
-    z-index: -1;
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__name {
+    display: none;
   }
 
-  .hs {
-    position: static;
-    width: auto;
-    margin: 0;
-    transform: none;
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph {
+    width: clamp(30px, 8vw, 42px);
+    height: clamp(30px, 8vw, 42px);
   }
 
-  .hs__tile {
-    width: 56px;
-    height: 56px;
-    border-radius: 13px;
-  }
-
-  .hs__tile svg {
-    width: 26px;
-    height: 26px;
-  }
-
-  .hs__label {
-    font-size: 9px;
-    letter-spacing: 0.08em;
-  }
-
-  #footer {
-    font-size: 9px;
+  html[data-layout='grid'] #footer-partner {
+    margin-bottom: 8px;
   }
 }
 

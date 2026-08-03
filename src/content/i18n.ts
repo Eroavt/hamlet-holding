@@ -30,8 +30,16 @@ const DICTS: Record<Lang, Dictionary> = { en, de };
 const STORAGE_KEY = 'hhg.lang';
 
 export function detectLang(): Lang {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'en' || stored === 'de') return stored;
+  // Reading storage throws outright where it is blocked (Safari with cookies
+  // disabled, an embedded frame with third-party storage partitioned off).
+  // Unguarded, that rejected App.start() and the whole site fell through to
+  // the "needs WebGL 2" screen on a browser that was perfectly capable.
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === 'en' || stored === 'de') return stored;
+  } catch {
+    /* fall through to the browser's own preference */
+  }
   return navigator.language.toLowerCase().startsWith('de') ? 'de' : 'en';
 }
 

@@ -17,7 +17,7 @@ import { Hotspots, type Projector } from '@/ui/Hotspots';
 import { Cursor } from '@/ui/Cursor';
 import { DetailPanel } from '@/ui/DetailPanel';
 import { LangSwitch } from '@/ui/LangSwitch';
-import { Legal } from '@/ui/Legal';
+import { Legal, legalBySlug } from '@/ui/Legal';
 
 import { divisionBySlug, type Division } from '@/content/divisions';
 import { detectLang, dict, rememberLang, type Dictionary, type Lang } from '@/content/i18n';
@@ -91,6 +91,7 @@ export class App {
     if (!this.renderer.supported) return this.fail();
 
     this.camera.fit(this.viewport.width, this.viewport.height);
+    this.publishLayout();
     this.quality = new Quality(this.ticker, this.viewport);
     this.post = new Postprocessing(
       this.renderer.gl,
@@ -120,12 +121,18 @@ export class App {
     );
 
     this.bind();
+    this.viewport.revalidate();
     this.ticker.add(this.frame);
     this.ticker.start();
 
     const deepLink = this.router.read();
     if (deepLink && divisionBySlug(deepLink)) this.coldStartAtDivision(divisionBySlug(deepLink)!);
     else this.openUniverse();
+
+    // The footer's legal links are real URLs, so opening one directly has to
+    // land on the document rather than on the intro with a misleading address.
+    const legalPage = legalBySlug(window.location.pathname);
+    if (legalPage) this.legal.open(legalPage);
 
     if (import.meta.env.DEV) {
       this.mountDebug();
@@ -408,6 +415,7 @@ export class App {
     this.viewport.on('resize', ({ width, height, dpr }) => {
       this.renderer.resize(width, height, dpr);
       this.camera.fit(width, height);
+      this.publishLayout();
       this.post.resize(width, height, dpr);
       this.world.resize(width, height, dpr, this.camera.cam.fov, width / Math.max(height, 1));
       this.logo.measure();
@@ -460,6 +468,16 @@ export class App {
 
   /** Dev-only: runs immediately after a render, while the buffer is still valid. */
   private pendingGrab: (() => void) | null = null;
+
+  /**
+   * Hands the camera's layout verdict to CSS. Which arrangement the tiles use
+   * is decided from the solved geometry, not from a width breakpoint — see
+   * Camera.solveRing.
+   */
+  private publishLayout(): void {
+    document.documentElement.dataset.layout = this.camera.layout;
+    document.documentElement.style.setProperty('--dist-scale', String(this.camera.ringScale));
+  }
 
   /**
    * Publishes the globe's projected geometry to CSS so the tiles orbit it

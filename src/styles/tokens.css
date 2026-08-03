@@ -43,5 +43,6 @@
   --globe-radius: 150px; /* projected radius of the globe in CSS px */
   --stage-cx: 50%; /* projected globe centre */
   --stage-cy: 50%;
+  --dist-scale: 1; /* solved ring radius multiplier */
   --ui-fade: 0; /* 0 = universe, 1 = selection screen */
 }
