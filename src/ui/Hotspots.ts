@@ -1,6 +1,7 @@
 import gsap from 'gsap';
 import { Vector3 } from 'three';
 import { DIVISIONS, ICON_VIEWBOX, type Division } from '@/content/divisions';
+import { ICONS } from '@/content/icons';
 import type { Dictionary } from '@/content/i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -90,7 +91,7 @@ export class Hotspots {
 
       const glyph = document.createElement('span');
       glyph.className = 'hs__glyph';
-      glyph.innerHTML = `<svg viewBox="${ICON_VIEWBOX}" aria-hidden="true">${d.icon}</svg>`;
+      glyph.innerHTML = `<svg viewBox="${ICON_VIEWBOX}" aria-hidden="true">${ICONS[d.id] ?? ''}</svg>`;
 
       const rule = document.createElement('span');
       rule.className = 'hs__rule';

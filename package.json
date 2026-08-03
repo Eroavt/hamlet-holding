@@ -3,13 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Hamlet Holding Group — immersive WebGL experience",
+  "description": "Hamlet Holding Group \u2014 immersive WebGL experience",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "brand": "node scripts/prepare-brand.mjs"
+    "brand": "node scripts/prepare-brand.mjs",
+    "icons": "node scripts/build-icons.mjs"
   },
   "dependencies": {
     "gsap": "^3.13.0",
@@ -18,6 +19,7 @@
   "devDependencies": {
     "@types/three": "^0.171.0",
     "jimp": "^1.6.0",
+    "lucide-static": "^1.28.0",
     "typescript": "^5.7.2",
     "vite": "^6.0.7"
   }
