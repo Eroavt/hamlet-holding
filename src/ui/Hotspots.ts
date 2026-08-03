@@ -43,6 +43,9 @@ export class Hotspots {
   readonly svg: SVGSVGElement;
   private tiles: Tile[] = [];
   private scratch = { x: 0, y: 0 };
+  /** Hoisted out of update() — it runs every frame and must not allocate. */
+  private readonly axis = new Vector3(0, 1, 0);
+  private readonly world = new Vector3();
 
   onSelect: ((division: Division) => void) | null = null;
   onFocus: ((dir: Vector3 | null) => void) | null = null;
@@ -87,11 +90,7 @@ export class Hotspots {
 
       const glyph = document.createElement('span');
       glyph.className = 'hs__glyph';
-      // Every field keeps its frame; only the divisions cleared for their
-      // final mark render one for now, per direction — the rest stay empty.
-      if (d.id === 'projectDevelopment' || d.id === 'assetManagement') {
-        glyph.innerHTML = `<svg viewBox="${ICON_VIEWBOX}" aria-hidden="true">${d.icon}</svg>`;
-      }
+      glyph.innerHTML = `<svg viewBox="${ICON_VIEWBOX}" aria-hidden="true">${d.icon}</svg>`;
 
       const rule = document.createElement('span');
       rule.className = 'hs__rule';
@@ -159,12 +158,9 @@ export class Hotspots {
   update(project: Projector, spin: number, radius: number): void {
     if (!this.el.classList.contains('is-live')) return;
 
-    const axis = new Vector3(0, 1, 0);
-    const world = new Vector3();
-
     for (const t of this.tiles) {
-      world.copy(t.dir).applyAxisAngle(axis, spin).multiplyScalar(1.005);
-      const facing = project(world, this.scratch);
+      this.world.copy(t.dir).applyAxisAngle(this.axis, spin).multiplyScalar(1.005);
+      const facing = project(this.world, this.scratch);
       const nx = this.scratch.x;
       const ny = this.scratch.y;
 
