@@ -21,6 +21,7 @@ export class Viewport extends Emitter<Events> {
 
   private timer = 0;
   private maxDpr: number;
+  private observer?: ResizeObserver;
 
   constructor(maxDpr = 2) {
     super();
@@ -31,10 +32,36 @@ export class Viewport extends Emitter<Events> {
 
     window.addEventListener('resize', this.schedule, { passive: true });
     window.addEventListener('orientationchange', this.schedule, { passive: true });
+
+    // A window `resize` event is not guaranteed for every way the frame can
+    // change size — an iframe being laid out, a bfcache restore, a devtools
+    // dock. Observing the root element catches those; the emit is still gated
+    // on the pixel size really changing, so this costs nothing when idle.
+    if (typeof ResizeObserver !== 'undefined') {
+      this.observer = new ResizeObserver(this.schedule);
+      this.observer.observe(document.documentElement);
+    }
+  }
+
+  /**
+   * Re-measure once the first layout has happened.
+   *
+   * Construction can run before the document has a size — the measurement then
+   * reads 0 x 0, and with nothing to correct it the canvas is allocated at
+   * zero and the scene renders into nothing while the render loop happily
+   * reports 60 fps.
+   */
+  revalidate(): void {
+    requestAnimationFrame(() => {
+      if (this.measure()) {
+        this.emit('resize', { width: this.width, height: this.height, dpr: this.dpr });
+      }
+    });
   }
 
   dispose(): void {
     clearTimeout(this.timer);
+    this.observer?.disconnect();
     window.removeEventListener('resize', this.schedule);
     window.removeEventListener('orientationchange', this.schedule);
     this.clear();
