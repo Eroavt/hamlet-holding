@@ -168,7 +168,6 @@
 }
 
 .hs {
-  --dist-scale: 1;
   position: absolute;
   left: 0;
   top: 0;
@@ -186,13 +185,9 @@
     );
 }
 
-/* Between the tile grid breakpoint and a comfortable desktop the ring would
-   push the side labels off screen, so it is drawn in. */
-@media (max-width: 1180px) {
-  .hs {
-    --dist-scale: 0.76;
-  }
-}
+/* --dist-scale is solved per viewport in Camera.solveRing and published by
+   App.publishLayout — the ring is pulled in exactly as far as it needs to be,
+   rather than by a fixed amount at a guessed breakpoint. */
 
 /* ------------------------------------------------- detail view: the rail ---
    In the detail view the globe has swelled and dropped, so the annotation ring
@@ -230,16 +225,20 @@
   display: none;
 }
 
+/* Sized so six always fit the rail's own width. At 68 px fixed the row was
+   408 px wide plus gaps, which ran off both edges of a phone — and since the
+   body never scrolls, the first and last divisions became unreachable rather
+   than merely clipped. */
 #hotspots.is-rail .hs__glyph {
-  width: 68px;
-  height: 68px;
+  width: clamp(40px, calc(14.5vw - 5px), 68px);
+  height: clamp(40px, calc(14.5vw - 5px), 68px);
   margin-top: 0;
   border-radius: 14px;
 }
 
 #hotspots.is-rail .hs__glyph svg {
-  width: 47px;
-  height: 47px;
+  width: 69%;
+  height: 69%;
 }
 
 /* The rail occupies the footer's line, and at this altitude the strapline has
@@ -864,55 +863,110 @@ html[data-stage='detail'] #footer {
   }
 }
 
-/* Below this width the polar ring would run off both edges, so the tiles
-   become a grid under the globe instead. The globe itself is lifted by the
-   camera fit, which constrains on width as well as height. */
-@media (max-width: 760px) {
-  #hotspots {
-    left: 0;
-    top: auto;
-    bottom: 0;
-    width: 100vw;
-    height: auto;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px 4px;
-    padding: 0 12px calc(var(--pad-y) + 26px);
+/* ------------------------------------------------------- layout: the grid ---
+   When the ring cannot clear the globe and stay in frame, the tiles drop into
+   a grid under it instead.
+
+   Positioned *inside* #stage rather than fixed to the viewport. #ui is a three
+   row grid (header / stage / footer), so anchoring to the stage's bottom edge
+   makes the footer's row reserve its own space — the two can no longer be
+   dealt the same pixels, which is what put the partner lockup straight through
+   the bottom row of icons. */
+
+html[data-layout='grid'] #hotspots:not(.is-rail) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: 0;
+  /* Capped and centred. Left to span the full width the three columns pull
+     apart on a tablet until the icons read as six unrelated objects rather
+     than one group. */
+  width: auto;
+  max-width: min(100%, 560px);
+  margin-inline: auto;
+  height: auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 4px;
+  padding: 0 12px 10px;
+}
+
+/* Lifts the tiles off the globe's lower limb so the type never sits on a
+   moving field of particles. Anchored to the viewport rather than to the tile
+   block: ending it at the block's edge left a visible horizontal seam where
+   the scrim stopped and the starfield resumed, just above the footer. */
+html[data-layout='grid'] #hotspots:not(.is-rail)::before {
+  content: '';
+  position: fixed;
+  inset: auto 0 0 0;
+  height: min(56vh, 460px);
+  background: linear-gradient(to top, var(--bg-void) 62%, transparent);
+  z-index: -1;
+  pointer-events: none;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs {
+  position: static;
+  width: auto;
+  max-width: none;
+  margin: 0;
+  transform: none;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph {
+  width: clamp(48px, 15vw, 62px);
+  height: clamp(48px, 15vw, 62px);
+  border-radius: 11px;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph::before {
+  inset: 3px;
+  border-radius: 8px;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph svg {
+  width: 68%;
+  height: 68%;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__name {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__in {
+  gap: 5px;
+}
+
+html[data-layout='grid'] #footer {
+  font-size: 9px;
+}
+
+html[data-layout='grid'] #footer-partner {
+  margin-bottom: 14px;
+}
+
+/* Landscape phones: two rows of three would eat the whole frame, so the six
+   run as a single row and the labels stand down — the glyphs carry it. */
+@media (max-height: 520px) {
+  html[data-layout='grid'] #hotspots:not(.is-rail) {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0 4px;
   }
 
-  #hotspots::before {
-    content: '';
-    position: absolute;
-    inset: -60px 0 0;
-    background: linear-gradient(to top, var(--bg-void) 42%, transparent);
-    z-index: -1;
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__name {
+    display: none;
   }
 
-  .hs {
-    position: static;
-    width: auto;
-    margin: 0;
-    transform: none;
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph {
+    width: clamp(40px, 11vw, 56px);
+    height: clamp(40px, 11vw, 56px);
   }
 
-  .hs__tile {
-    width: 56px;
-    height: 56px;
-    border-radius: 13px;
-  }
-
-  .hs__tile svg {
-    width: 26px;
-    height: 26px;
-  }
-
-  .hs__label {
-    font-size: 9px;
-    letter-spacing: 0.08em;
-  }
-
-  #footer {
-    font-size: 9px;
+  html[data-layout='grid'] #footer-partner {
+    margin-bottom: 8px;
   }
 }
 
