@@ -11,6 +11,17 @@ const DOCS: Record<LegalPage, LegalDoc> = {
 
 export type LegalPage = 'imprint' | 'privacy';
 
+/** The footer links carry real hrefs, so these paths have to resolve. */
+const PATHS: Record<string, LegalPage> = {
+  impressum: 'imprint',
+  datenschutz: 'privacy',
+};
+
+/** The legal page the current URL asks for, if any. */
+export function legalBySlug(path: string): LegalPage | undefined {
+  return PATHS[path.slice(path.lastIndexOf('/') + 1)];
+}
+
 const esc = (s: string): string =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 
