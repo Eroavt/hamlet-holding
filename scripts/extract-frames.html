@@ -1,0 +1,90 @@
+<!doctype html>
+<!--
+  Dev-only frame extractor for the reference recordings.
+
+  Vite serves the project root, so assets-source/*.mp4 is same-origin and the
+  canvas stays untainted — which is what makes toDataURL work here. Frames are
+  POSTed to the /__capture endpoint (scripts/vite-plugin-capture.mjs) and land
+  in .captures/ at full resolution for review.
+
+  Open http://127.0.0.1:5173/scripts/extract-frames.html
+-->
+<meta charset="utf-8" />
+<title>reference frame extractor</title>
+<style>
+  body {
+    background: #111;
+    color: #7fe;
+    font: 12px ui-monospace, monospace;
+    padding: 16px;
+  }
+  video,
+  canvas {
+    display: none;
+  }
+</style>
+<pre id="log">idle</pre>
+<script type="module">
+  const log = document.getElementById('log');
+  const say = (m) => (log.textContent += '\n' + m);
+
+  async function frames(src, prefix, count) {
+    const v = document.createElement('video');
+    v.src = src;
+    v.muted = true;
+    v.preload = 'auto';
+    document.body.append(v);
+    await new Promise((res, rej) => {
+      v.addEventListener('loadeddata', res, { once: true });
+      v.addEventListener('error', () => rej(new Error('load ' + src)), { once: true });
+    });
+
+    const W = v.videoWidth;
+    const H = v.videoHeight;
+    say(`${src} ${W}x${H} ${v.duration.toFixed(2)}s`);
+
+    const c = document.createElement('canvas');
+    c.width = W;
+    c.height = H;
+    const ctx = c.getContext('2d');
+
+    for (let i = 0; i < count; i++) {
+      const t = (v.duration * i) / (count - 1);
+      // Deliberately timer-based, not rAF: this page is usually not
+      // compositing, and requestAnimationFrame simply never fires there.
+      await new Promise((res) => {
+        const done = () => {
+          v.removeEventListener('seeked', done);
+          clearTimeout(guard);
+          res();
+        };
+        const guard = setTimeout(done, 2000);
+        v.addEventListener('seeked', done);
+        v.currentTime = Math.min(t, v.duration - 0.001);
+      });
+      await new Promise((r) => setTimeout(r, 60));
+      ctx.drawImage(v, 0, 0, W, H);
+      const name = `${prefix}_${String(i).padStart(2, '0')}_${t.toFixed(2).replace('.', 'p')}`;
+      await fetch('/__capture', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ name, dataUrl: c.toDataURL('image/png') }),
+      });
+      say(`  ${name}`);
+    }
+    v.remove();
+  }
+
+  const q = new URLSearchParams(location.search);
+  const which = q.get('v') ?? 'start';
+  const count = Number(q.get('n') ?? 24);
+
+  const SRC = {
+    start: '/assets-source/Webseite Start Video.mp4',
+    select: '/assets-source/Webseite Auswahl Video.mp4',
+  };
+
+  frames(SRC[which], which, count)
+    .then(() => say('DONE'))
+    .catch((e) => say('ERROR ' + e.message));
+</script>

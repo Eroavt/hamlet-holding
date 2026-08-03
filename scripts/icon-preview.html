@@ -1,0 +1,196 @@
+<!doctype html>
+<!--
+  Dev-only icon workbench.
+
+    ?sheet=1              all six, at the sizes they actually render at
+    ?only=<id>&grid=1     one glyph, large, over the 48-unit coordinate grid
+
+  The grid matters: these paths are hand-authored, and without it every fix is
+  guesswork about where a coordinate actually lands. Posts to /__capture.
+-->
+<meta charset="utf-8" />
+<title>icon workbench</title>
+<style>
+  body {
+    margin: 0;
+    padding: 24px;
+    background: #010105;
+    color: #fff;
+    font: 11px/1.4 'Segoe UI', system-ui, sans-serif;
+  }
+  h1 {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.42);
+    margin: 0 0 12px;
+    font-weight: 600;
+  }
+  .row {
+    display: flex;
+    gap: 22px;
+    align-items: flex-end;
+    margin-bottom: 28px;
+  }
+  .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .frame {
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(88, 182, 242, 0.6);
+    border-radius: 14px;
+    background: linear-gradient(160deg, rgba(47, 122, 186, 0.14), transparent 64%);
+  }
+  svg.glyph {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2.1;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cap {
+    color: rgba(255, 255, 255, 0.34);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .stage {
+    position: relative;
+    display: inline-block;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+  }
+  .stage svg {
+    display: block;
+  }
+  .grid line {
+    stroke: rgba(120, 190, 255, 0.16);
+    stroke-width: 0.12;
+  }
+  .grid line.major {
+    stroke: rgba(120, 190, 255, 0.38);
+    stroke-width: 0.22;
+  }
+  .grid text {
+    fill: rgba(140, 200, 255, 0.5);
+    font-size: 1.6px;
+    font-family: monospace;
+  }
+</style>
+<div id="out"></div>
+<script type="module">
+  import { DIVISIONS, ICON_VIEWBOX } from '/src/content/divisions.ts';
+
+  const q = new URLSearchParams(location.search);
+  const only = q.get('only');
+  const out = document.getElementById('out');
+
+  const glyph = (icon, size) =>
+    `<svg class="glyph" viewBox="${ICON_VIEWBOX}" width="${size}" height="${size}">${icon}</svg>`;
+
+  if (only) {
+    const d = DIVISIONS.find((x) => x.id === only);
+    if (!d) throw new Error('unknown icon ' + only);
+    const S = Number(q.get('size') ?? 460);
+
+    // 48-unit grid, ruled every 4 with labels every 8.
+    let g = '';
+    for (let i = 0; i <= 48; i += 2) {
+      const major = i % 8 === 0;
+      const cls = major ? 'major' : '';
+      g += `<line class="${cls}" x1="${i}" y1="0" x2="${i}" y2="48"/>`;
+      g += `<line class="${cls}" x1="0" y1="${i}" x2="48" y2="${i}"/>`;
+      if (major && i > 0 && i < 48) {
+        g += `<text x="${i + 0.4}" y="2.2">${i}</text>`;
+        g += `<text x="0.4" y="${i - 0.4}">${i}</text>`;
+      }
+    }
+
+    out.innerHTML =
+      `<h1>${d.id} — 48-unit grid</h1>` +
+      `<div class="stage" style="width:${S}px;height:${S}px">` +
+      `<svg class="grid" viewBox="${ICON_VIEWBOX}" width="${S}" height="${S}" ` +
+      `style="position:absolute;inset:0">${g}</svg>` +
+      `<svg class="glyph" viewBox="${ICON_VIEWBOX}" width="${S}" height="${S}" ` +
+      `style="position:absolute;inset:0">${d.icon}</svg>` +
+      `</div>` +
+      `<div class="row" style="margin-top:20px">` +
+      ['56', '47', '34']
+        .map(
+          (s) =>
+            `<div class="cell"><div class="frame" style="width:${Number(s) * 1.43}px;height:${
+              Number(s) * 1.43
+            }px">${glyph(d.icon, s)}</div><span class="cap">${s} px</span></div>`,
+        )
+        .join('') +
+      `</div>`;
+  } else {
+    const SIZES = [
+      { frame: 80, glyph: 56, label: 'overview 80 / 56' },
+      { frame: 68, glyph: 47, label: 'detail rail 68 / 47' },
+      { frame: 132, glyph: 92, label: 'blow-up' },
+    ];
+    for (const s of SIZES) {
+      const h = document.createElement('h1');
+      h.textContent = s.label;
+      const row = document.createElement('div');
+      row.className = 'row';
+      for (const d of DIVISIONS) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.innerHTML =
+          `<div class="frame" style="width:${s.frame}px;height:${s.frame}px">` +
+          `${glyph(d.icon, s.glyph)}</div>` +
+          `<span class="cap">${d.id.replace(/([A-Z])/g, ' $1')}</span>`;
+        row.append(cell);
+      }
+      out.append(h, row);
+    }
+  }
+
+  // Rasterise through an SVG foreignObject — the preview pane is not reliably
+  // compositing, so a real screenshot is not available.
+  const w = document.documentElement.scrollWidth;
+  const hgt = document.documentElement.scrollHeight;
+  const css = Array.from(document.styleSheets)
+    .flatMap((sh) => {
+      try {
+        return Array.from(sh.cssRules).map((r) => r.cssText);
+      } catch {
+        return [];
+      }
+    })
+    .join('\n');
+  const svg =
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${hgt}">` +
+    `<foreignObject width="100%" height="100%">` +
+    `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${w}px;height:${hgt}px;background:#010105">` +
+    `<style><![CDATA[${css}]]></style>${new XMLSerializer().serializeToString(out)}` +
+    `</div></foreignObject></svg>`;
+
+  const img = new Image();
+  img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  await new Promise((res) => {
+    img.onload = res;
+    img.onerror = res;
+  });
+  const c = document.createElement('canvas');
+  c.width = w;
+  c.height = hgt;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#010105';
+  ctx.fillRect(0, 0, w, hgt);
+  ctx.drawImage(img, 0, 0);
+  await fetch('/__capture', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({
+      name: only ? `icon_${only}` : 'icon_sheet',
+      dataUrl: c.toDataURL('image/png'),
+    }),
+  });
+  document.title = 'done';
+</script>

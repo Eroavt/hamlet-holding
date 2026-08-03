@@ -1,0 +1,181 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background: var(--bg-void);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+svg {
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+:focus {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 1px solid var(--globe-rim);
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+::selection {
+  background: var(--globe);
+  color: var(--bg-void);
+}
+
+/* ------------------------------------------------------------------ layers */
+
+#gl {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  z-index: 0;
+}
+
+#ui {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  pointer-events: none;
+}
+
+#ui > * {
+  min-width: 0;
+  min-height: 0;
+}
+
+/* Anything interactive opts back in explicitly. */
+button,
+a,
+[data-interactive] {
+  pointer-events: auto;
+}
+
+/* ------------------------------------------------------- boot / fallbacks */
+
+#boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--bg-void);
+  display: grid;
+  place-items: center;
+  transition: opacity 0.6s var(--ease-out);
+}
+
+#boot.is-done {
+  opacity: 0;
+  pointer-events: none;
+}
+
+#boot-bar {
+  width: min(180px, 40vw);
+  height: 1px;
+  background: rgba(255, 255, 255, 0.12);
+  overflow: hidden;
+}
+
+#boot-bar > i {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: linear-gradient(90deg, transparent, var(--globe-rim), transparent);
+  transform: translateX(-100%);
+  animation: boot-sweep 1.15s var(--ease-in-out) infinite;
+}
+
+@keyframes boot-sweep {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+#unsupported,
+.noscript {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-content: center;
+  gap: 1rem;
+  padding: var(--pad-x);
+  text-align: center;
+  background: var(--bg-void);
+}
+
+#unsupported[hidden] {
+  display: none;
+}
+
+#unsupported h1,
+.noscript h1 {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  font-size: clamp(20px, 4vw, 34px);
+  margin: 0;
+}
+
+#unsupported p,
+.noscript p {
+  color: var(--text-dim);
+  max-width: 46ch;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-size: 14px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #boot-bar > i {
+    animation-duration: 2.4s;
+  }
+}

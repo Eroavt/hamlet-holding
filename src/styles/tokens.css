@@ -1,0 +1,47 @@
+/* Design tokens — sampled pixel-for-pixel from assets-source/Webseite Langformat.jpeg */
+
+:root {
+  /* ---- Space ---- */
+  --bg-void: #010105;
+  --bg-deep: #030516;
+  --nebula-1: #030826;
+  --nebula-2: #041438;
+  --nebula-3: #021847;
+  --dust: #12246b;
+
+  /* ---- Globe ---- */
+  --globe-core: #011037;
+  --globe: #06c0fd;
+  --globe-rim: #4ad8ff;
+
+  /* ---- Division accents ---- */
+  --accent-blue: #2f7aba;
+  --accent-blue-lit: #58b6f2;
+  --accent-violet: #7b3f9e;
+  --accent-violet-lit: #b874e0;
+
+  /* ---- Type ---- */
+  --text: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.62);
+  --text-faint: rgba(255, 255, 255, 0.34);
+  --hairline: rgba(255, 255, 255, 0.14);
+
+  --font-serif: 'Cormorant Garamond', 'Trajan Pro', Didot, 'Bodoni MT', 'Playfair Display', Georgia,
+    'Times New Roman', serif;
+  --font-sans: Inter, 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /* ---- Rhythm ---- */
+  --pad-x: clamp(20px, 4vw, 64px);
+  --pad-y: clamp(18px, 3.2vh, 40px);
+
+  /* ---- Motion ---- */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.76, 0, 0.24, 1);
+
+  /* ---- Runtime-driven (written by JS) ---- */
+  --globe-radius: 150px; /* projected radius of the globe in CSS px */
+  --stage-cx: 50%; /* projected globe centre */
+  --stage-cy: 50%;
+  --ui-fade: 0; /* 0 = universe, 1 = selection screen */
+}

@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en" data-stage="boot">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#010105" />
+    <meta name="color-scheme" content="dark" />
+
+    <title>Hamlet Holding Group</title>
+    <meta
+      name="description"
+      content="Hamlet Holding Group — project development, real estate investment, transaction, construction, asset and advisory management."
+    />
+    <meta name="robots" content="index, follow" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Hamlet Holding Group" />
+    <meta property="og:title" content="Hamlet Holding Group" />
+    <meta
+      property="og:description"
+      content="Project development, real estate investment, transaction, construction, asset and advisory management."
+    />
+    <meta property="og:image" content="/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" as="image" href="/brand/crown.png" />
+    <link rel="preload" as="image" href="/brand/wordmark.png" />
+    <link rel="preload" as="image" href="/brand/subline.png" />
+  </head>
+
+  <body>
+    <!-- The one and only WebGL surface. Never re-created for the lifetime of the page. -->
+    <canvas id="gl" aria-hidden="true"></canvas>
+
+    <!-- Everything below floats above the canvas in its own compositor layer. -->
+    <div id="ui">
+      <header id="topbar">
+        <div id="anchor-header" class="logo-anchor" aria-hidden="true"></div>
+        <nav id="lang" aria-label="Language">
+          <button type="button" class="lang__btn is-active" data-lang="en">EN</button>
+          <span class="lang__sep" aria-hidden="true"></span>
+          <button type="button" class="lang__btn" data-lang="de">DE</button>
+        </nav>
+      </header>
+
+      <main id="stage">
+        <div id="anchor-hero" class="logo-anchor" aria-hidden="true"></div>
+
+        <!-- Single logo element. Travels from hero anchor to header anchor via FLIP. -->
+        <button id="logo" type="button" aria-label="Enter Hamlet Holding Group">
+          <span class="logo__breathe">
+            <span class="logo__art">
+              <img class="logo__crown" src="/brand/crown.png" alt="" draggable="false" />
+              <img class="logo__word" src="/brand/wordmark.png" alt="" draggable="false" />
+              <img class="logo__sub" src="/brand/subline.png" alt="" draggable="false" />
+            </span>
+            <span class="logo__pings" aria-hidden="true">
+              <span class="ping"></span>
+              <span class="ping"></span>
+            </span>
+          </span>
+        </button>
+
+        <!-- Division tiles are generated from src/content/divisions.ts -->
+        <div id="hotspots" role="group" aria-label="Business divisions"></div>
+
+        <section id="detail" aria-live="polite" hidden>
+          <p id="detail-eyebrow"></p>
+          <h1 id="detail-title"></h1>
+          <p id="detail-body"></p>
+        </section>
+      </main>
+
+      <footer id="footer">
+        <a
+          id="footer-partner"
+          href="https://seybandgruppe.de/"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span id="footer-partner-label"></span>
+          <span class="seyband">
+            <span class="seyband__word"><b>SEYBAND</b>GRUPPE</span>
+            <i class="seyband__rule seyband__rule--upper" aria-hidden="true"></i>
+            <i class="seyband__rule seyband__rule--lower" aria-hidden="true"></i>
+          </span>
+        </a>
+        <span id="footer-legal">Hamlet Holding GmbH</span>
+        <nav id="footer-links" aria-label="Legal">
+          <a href="/impressum" data-legal="imprint"></a>
+          <a href="/datenschutz" data-legal="privacy"></a>
+        </nav>
+      </footer>
+    </div>
+
+    <section id="legal" aria-live="polite" hidden>
+      <button id="legal-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
+      </button>
+      <h1 id="legal-title"></h1>
+      <div id="legal-body"></div>
+    </section>
+
+    <div id="cursor" aria-hidden="true"><span class="cursor__ring"></span><span class="cursor__dot"></span></div>
+
+    <!-- Pure CSS, paints before the module graph is parsed. -->
+    <div id="boot" aria-hidden="true"><div id="boot-bar"><i></i></div></div>
+
+    <div id="unsupported" hidden>
+      <h1>Hamlet Holding Group</h1>
+      <p>
+        This experience requires a browser with WebGL 2. Please open the site in a current version of
+        Chrome, Edge, Firefox or Safari.
+      </p>
+    </div>
+
+    <noscript>
+      <div class="noscript">
+        <h1>Hamlet Holding Group</h1>
+        <p>Project development · Real estate investment · Transaction management · Construction management · Asset management · Advisory management</p>
+      </div>
+    </noscript>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

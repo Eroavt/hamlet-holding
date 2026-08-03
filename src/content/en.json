@@ -1,0 +1,44 @@
+{
+  "brand": "Hamlet Holding Group",
+  "enterLabel": "Enter Hamlet Holding Group",
+  "backLabel": "Back to overview",
+  "eyebrow": "Division",
+  "company": "Hamlet Holding GmbH",
+  "imprint": "Legal notice",
+  "privacy": "Privacy",
+  "legalPending": "This page is not written yet.",
+  "partnerLabel": "Our exclusive partner:",
+  "legalGermanOnly": "This is a legally binding document under German law and is reproduced here in the original German.",
+  "divisions": {
+    "projectDevelopment": {
+      "label": "Project\nDevelopment",
+      "title": "Project Development",
+      "body": "From land assembly and zoning through to handover, we originate and steer developments in their entirety. Feasibility, design management, permitting and delivery stay under one roof, so the business case that was underwritten is the one that gets built."
+    },
+    "realEstateInvestment": {
+      "label": "Real Estate\nInvestment",
+      "title": "Real Estate Investment",
+      "body": "We invest our own and partnered capital across residential, commercial and mixed-use assets in Europe's primary markets. Every acquisition is underwritten on cash flow first, with a defined hold period and a written exit before a single euro is committed."
+    },
+    "transactionManagement": {
+      "label": "Transaction\nManagement",
+      "title": "Transaction Management",
+      "body": "Sourcing, due diligence, structuring and closing, run as one discipline. We manage the full process on both the buy and the sell side, coordinate advisors and lenders, and keep the timetable honest from letter of intent to notarisation."
+    },
+    "constructionManagement": {
+      "label": "Construction\nManagement",
+      "title": "Construction Management",
+      "body": "Cost, schedule and quality governed on site rather than reported after the fact. We act as the owner's arm across tendering, contractor selection and execution, with transparent change control and a single accountable point of contact."
+    },
+    "assetManagement": {
+      "label": "Asset\nManagement",
+      "title": "Asset Management",
+      "body": "Active management of standing assets over the whole hold period: letting strategy, tenant relations, capital expenditure planning and repositioning. The mandate is simple — protect the substance and compound the net operating income."
+    },
+    "advisoryManagement": {
+      "label": "Advisory\nManagement",
+      "title": "Advisory Management",
+      "body": "Independent counsel for owners, family offices and institutional investors. Portfolio strategy, restructuring, financing and second opinions on transactions — delivered by the same people who run our own balance sheet."
+    }
+  }
+}

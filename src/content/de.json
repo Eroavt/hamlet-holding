@@ -1,0 +1,44 @@
+{
+  "brand": "Hamlet Holding Group",
+  "enterLabel": "Hamlet Holding Group betreten",
+  "backLabel": "Zurück zur Übersicht",
+  "eyebrow": "Geschäftsbereich",
+  "company": "Hamlet Holding GmbH",
+  "imprint": "Impressum",
+  "privacy": "Datenschutz",
+  "legalPending": "Diese Seite ist noch nicht geschrieben.",
+  "partnerLabel": "Zu unserem Exklusiv-Partner:",
+  "legalGermanOnly": "",
+  "divisions": {
+    "projectDevelopment": {
+      "label": "Projekt-\nentwicklung",
+      "title": "Projektentwicklung",
+      "body": "Von der Grundstückssicherung über das Baurecht bis zur Übergabe entwickeln und steuern wir Projekte vollständig. Machbarkeit, Planungssteuerung, Genehmigung und Realisierung bleiben in einer Hand — damit gebaut wird, was kalkuliert wurde."
+    },
+    "realEstateInvestment": {
+      "label": "Immobilien-\ninvestment",
+      "title": "Immobilieninvestment",
+      "body": "Wir investieren eigenes und Partnerkapital in Wohn-, Gewerbe- und Mischnutzungen in den europäischen Kernmärkten. Jeder Ankauf wird zuerst über den Cashflow gerechnet, mit definierter Haltedauer und schriftlich fixiertem Exit, bevor ein Euro fließt."
+    },
+    "transactionManagement": {
+      "label": "Transaktions-\nmanagement",
+      "title": "Transaktionsmanagement",
+      "body": "Ankaufsprüfung, Due Diligence, Strukturierung und Closing als eine Disziplin. Wir führen den gesamten Prozess auf Käufer- wie Verkäuferseite, koordinieren Berater und Finanzierer und halten den Zeitplan belastbar — von der Absichtserklärung bis zur Beurkundung."
+    },
+    "constructionManagement": {
+      "label": "Bau-\nmanagement",
+      "title": "Baumanagement",
+      "body": "Kosten, Termine und Qualität werden auf der Baustelle gesteuert, nicht im Nachhinein berichtet. Wir handeln als verlängerter Arm des Eigentümers bei Ausschreibung, Vergabe und Ausführung — mit transparentem Nachtragsmanagement und einem Verantwortlichen."
+    },
+    "assetManagement": {
+      "label": "Asset\nManagement",
+      "title": "Asset Management",
+      "body": "Aktive Bewirtschaftung des Bestands über die gesamte Haltedauer: Vermietungsstrategie, Mieterbetreuung, Instandhaltungsplanung und Repositionierung. Das Mandat ist einfach — Substanz sichern und den Nettoertrag steigern."
+    },
+    "advisoryManagement": {
+      "label": "Advisory\nManagement",
+      "title": "Advisory Management",
+      "body": "Unabhängige Beratung für Eigentümer, Family Offices und institutionelle Investoren. Portfoliostrategie, Restrukturierung, Finanzierung und Zweitmeinungen zu Transaktionen — von denselben Leuten, die unsere eigene Bilanz verantworten."
+    }
+  }
+}
