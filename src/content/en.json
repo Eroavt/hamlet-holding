@@ -7,7 +7,13 @@
   "imprint": "Legal notice",
   "privacy": "Privacy",
   "legalPending": "This page is not written yet.",
-  "partnerLabel": "Our exclusive partner:",
+  "partnerLabel": "Our exclusive partner",
+  "kpiHeading": "Our key figures over the past 7 years",
+  "kpis": {
+    "leaseVolume": "Lease volume\nrealised",
+    "developedArea": "Site and floor area\ndeveloped",
+    "projectVolume": "Project volume\nrealised"
+  },
   "legalGermanOnly": "This is a legally binding document under German law and is reproduced here in the original German.",
   "divisions": {
     "projectDevelopment": {
@@ -29,16 +35,6 @@
       "label": "Construction\nManagement",
       "title": "Construction Management",
       "body": "Cost, schedule and quality governed on site rather than reported after the fact. We act as the owner's arm across tendering, contractor selection and execution, with transparent change control and a single accountable point of contact."
-    },
-    "assetManagement": {
-      "label": "Asset\nManagement",
-      "title": "Asset Management",
-      "body": "Active management of standing assets over the whole hold period: letting strategy, tenant relations, capital expenditure planning and repositioning. The mandate is simple — protect the substance and compound the net operating income."
-    },
-    "advisoryManagement": {
-      "label": "Advisory\nManagement",
-      "title": "Advisory Management",
-      "body": "Independent counsel for owners, family offices and institutional investors. Portfolio strategy, restructuring, financing and second opinions on transactions — delivered by the same people who run our own balance sheet."
     }
   }
 }

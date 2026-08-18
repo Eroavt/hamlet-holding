@@ -1,7 +1,7 @@
 # Hamlet Holding Group
 
 An immersive one-page experience: a universe of stars collapses into a network
-globe, from which the six business divisions emerge.
+globe, from which the four business divisions emerge.
 
 ```bash
 npm install
@@ -14,9 +14,9 @@ There is **one** WebGL canvas and **one** particle buffer for the whole site.
 "Universe", "globe" and "detail" are not separate scenes — they are different
 values of a single `uProgress` uniform on the same 240 000 particles.
 
-Every particle carries two positions: where it rests in the cloud behind the
-mark (`aStart`) and where it belongs on the globe (`position`). The shader
-interpolates between them. Two details do the actual work
+There is no separate "start" buffer: every particle begins at radius zero, so
+before the click there is literally nothing on screen. The shader carries it
+out to its place on the globe. Two details do the actual work
 (`src/gl/shaders/morph.glsl.ts`):
 
 1. a per-particle stagger biased by latitude, so the continents write
@@ -36,7 +36,7 @@ scripts/           asset pipeline + dev tooling
 src/core/          Ticker, Viewport, Quality, StageMachine, Router, App
 src/gl/            renderer, camera, post-processing, scenes, shaders, data
 src/ui/            logo, hotspots, detail panel, cursor, language switch
-src/content/       divisions.ts + en.json / de.json
+src/content/       divisions.ts, kpis.ts + de / en / ru json, legal texts
 src/styles/        tokens.css, base.css, ui.css
 ```
 
@@ -45,12 +45,14 @@ only place that knows about both the WebGL side and the DOM side.
 
 ## Content
 
-- **Copy** lives in `src/content/en.json` and `src/content/de.json`. Keys must
+- **Copy** lives in `src/content/de.json`, `en.json` and `ru.json`. Keys must
   match the `id` of each entry in `src/content/divisions.ts`.
+- **Key figures** live in `src/content/kpis.ts`. Read the warning at the top of
+  that file before publishing — two of the three numbers are not Hamlet's.
 - **Division placement** around the globe is polar: `angle` in degrees from
   twelve o'clock, `dist` as a multiple of the globe's projected radius. Those
-  numbers were measured off `assets-source/Webseite Langformat.jpeg`, so the
-  composition holds at any viewport.
+  numbers form a pyramid under the mark; twelve o'clock must stay empty
+  because the logo rests there. The composition holds at any viewport.
 - **`lat` / `lon`** decide which region of the globe lights up on hover.
 - **Icons** are inline SVG strokes in the same file.
 
@@ -115,6 +117,13 @@ division link would 404.
 
 ## Known gaps
 
+- **Two of the three key figures in `src/content/kpis.ts` are another
+  company's published numbers**, taken from a reference screenshot while the
+  layout was being built. They must be replaced before the site is announced.
+- The Russian translation has not been reviewed by a native speaker.
+- `App.mountDebug` / `App.mountCaptureApi` are unreachable in production but
+  their bodies still ship — roughly 2.3 kB gzip of dead code. Moving them into
+  a dynamically imported dev-only module would drop them entirely.
 - Division copy is placeholder. Structure and transitions are final.
 - Typography uses a system serif stack; swap in self-hosted `.woff2` files via
   `--font-serif` in `src/styles/tokens.css` when the brand font is decided.

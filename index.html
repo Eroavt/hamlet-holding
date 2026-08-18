@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-stage="boot">
+<html lang="de" data-stage="boot">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -9,7 +9,7 @@
     <title>Hamlet Holding Group</title>
     <meta
       name="description"
-      content="Hamlet Holding Group — project development, real estate investment, transaction, construction, asset and advisory management."
+      content="Hamlet Holding Group — Projektentwicklung, Immobilien-Investment, Transaktions-Management und Bau-Management."
     />
     <meta name="robots" content="index, follow" />
 
@@ -18,7 +18,7 @@
     <meta property="og:title" content="Hamlet Holding Group" />
     <meta
       property="og:description"
-      content="Project development, real estate investment, transaction, construction, asset and advisory management."
+      content="Projektentwicklung, Immobilien-Investment, Transaktions-Management und Bau-Management."
     />
     <meta property="og:image" content="/og-image.jpg" />
     <meta property="og:image:width" content="1200" />
@@ -39,11 +39,9 @@
     <div id="ui">
       <header id="topbar">
         <div id="anchor-header" class="logo-anchor" aria-hidden="true"></div>
-        <nav id="lang" aria-label="Language">
-          <button type="button" class="lang__btn is-active" data-lang="en">EN</button>
-          <span class="lang__sep" aria-hidden="true"></span>
-          <button type="button" class="lang__btn" data-lang="de">DE</button>
-        </nav>
+        <!-- Buttons are generated from content/i18n.ts LANGS so the order and
+             the set of languages live in one place. -->
+        <nav id="lang" aria-label="Language"></nav>
       </header>
 
       <main id="stage">
@@ -73,6 +71,11 @@
           <p id="detail-body"></p>
         </section>
       </main>
+
+      <section id="kpi" aria-labelledby="kpi-heading">
+        <h2 id="kpi-heading"></h2>
+        <dl id="kpi-list"></dl>
+      </section>
 
       <footer id="footer">
         <a
@@ -105,6 +108,7 @@
     </section>
 
     <div id="cursor" aria-hidden="true"><span class="cursor__ring"></span><span class="cursor__dot"></span></div>
+    <div id="flash" aria-hidden="true"></div>
 
     <!-- Pure CSS, paints before the module graph is parsed. -->
     <div id="boot" aria-hidden="true"><div id="boot-bar"><i></i></div></div>

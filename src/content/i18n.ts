@@ -1,7 +1,10 @@
 import en from './en.json';
 import de from './de.json';
+import ru from './ru.json';
 
-export type Lang = 'en' | 'de';
+/** Order here is the order the switcher renders in. */
+export const LANGS = ['de', 'en', 'ru'] as const;
+export type Lang = (typeof LANGS)[number];
 
 export interface DivisionCopy {
   label: string;
@@ -22,17 +25,28 @@ export interface Dictionary {
   /** Shown above the privacy notice when the reader is not on the German site. */
   legalGermanOnly: string;
   partnerLabel: string;
+  kpiHeading: string;
+  /** Keyed by the ids in content/kpis.ts. */
+  kpis: Record<string, string>;
   divisions: Record<string, DivisionCopy>;
 }
 
-const DICTS: Record<Lang, Dictionary> = { en, de };
+const DICTS: Record<Lang, Dictionary> = { de, en, ru };
 
 const STORAGE_KEY = 'hhg.lang';
 
+function isLang(v: unknown): v is Lang {
+  return typeof v === 'string' && (LANGS as readonly string[]).includes(v);
+}
+
 export function detectLang(): Lang {
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'en' || stored === 'de') return stored;
-  return navigator.language.toLowerCase().startsWith('de') ? 'de' : 'en';
+  if (isLang(stored)) return stored;
+  const nav = navigator.language.toLowerCase();
+  // German is the house language, so it is also the fallback.
+  if (nav.startsWith('ru')) return 'ru';
+  if (nav.startsWith('en')) return 'en';
+  return 'de';
 }
 
 export function rememberLang(lang: Lang): void {

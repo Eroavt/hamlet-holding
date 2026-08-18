@@ -10,6 +10,7 @@ layout(location = 0) out vec4 fragColor;
 
 export const COMMON = /* glsl */ `
 const float PI = 3.141592653589793;
+const float TAU = 6.283185307179586;
 
 float easeInOutQuint(float t) {
   return t < 0.5

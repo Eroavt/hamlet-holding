@@ -123,13 +123,13 @@ export class GlobeShell {
     this.atmosphere.renderOrder = 3;
     this.atmosphere.visible = false;
 
-    /* ---- the violet light behind it -------------------------------------- */
+    /* ---- the blue light behind it ------------------------------------------ */
     this.glowMat = new ShaderMaterial({
       glslVersion: GLSL3,
       vertexShader: GLOW_VERT,
       fragmentShader: GLOW_FRAG,
       uniforms: {
-        uColor: { value: new Color(0xa04ad8) },
+        uColor: { value: new Color(0x2e6fe0) },
         uOpacity: { value: 0 },
       },
       transparent: true,

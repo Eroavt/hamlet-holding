@@ -25,7 +25,10 @@ export class Nebula {
         uAspect: { value: 1 },
         uColorA: { value: new Color(0x030826) },
         uColorB: { value: new Color(0x12246b) },
-        uColorC: { value: new Color(0x2a1a63) },
+        // Was 0x2a1a63 — that hex sits past 240° of hue, i.e. on the violet
+        // side of blue rather than on it. Same depth, shifted to a hue that
+        // reads unambiguously blue.
+        uColorC: { value: new Color(0x1c2f6b) },
       },
       depthWrite: false,
       depthTest: false,

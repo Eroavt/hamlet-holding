@@ -20,10 +20,24 @@ export class Camera {
   distance = 7.6;
   /** Multiplier the collapse timeline animates (1 = resting). */
   dolly = 1;
+  /**
+   * Roll about the view axis, in radians. Zero everywhere except the signature
+   * sequence — a horizon that tilts is the one camera move a static scene
+   * cannot fake, and it is what makes being pulled into the vortex read as
+   * motion rather than as a zoom.
+   */
+  roll = 0;
   /** Projected radius of the unit sphere, in CSS pixels. */
   globeRadiusPx = 150;
   /** Vertical aim offset in world units — lifts the globe on narrow screens. */
-  private lookY = 0;
+  lookY = 0;
+  /**
+   * Height of the fixed chrome below the stage (key figures + footer), in CSS
+   * pixels. The marker ring reaches 2.45 globe radii out, so sizing the globe
+   * against the raw viewport height pushes the lower markers straight through
+   * whatever sits at the bottom. Set by App from the measured elements.
+   */
+  bottomReserve = 0;
 
   private pointer = new Vector2();
   private smooth = new Vector2();
@@ -43,15 +57,23 @@ export class Camera {
     // for them. Narrow: they drop into a grid along the bottom instead, which
     // frees the width but takes the lower half of the height.
     const narrow = width <= NARROW;
+    // Only the space the constellation can actually occupy counts.
+    const usable = Math.max(height - this.bottomReserve, height * 0.45);
     const target = narrow
-      ? 0.21 * Math.min(height * 0.52, width * 0.95)
-      : GLOBE_FIT * Math.min(height, width * 0.72);
+      ? 0.21 * Math.min(usable * 0.52, width * 0.95)
+      : GLOBE_FIT * Math.min(usable, width * 0.72);
 
     this.distance = this.focal / Math.max(target, 1);
     this.globeRadiusPx = this.focal / this.distance;
 
-    // Lift the globe out of the tile grid by aiming below it.
-    this.lookY = narrow ? -(0.11 * height) / this.globeRadiusPx : 0;
+    // Centre the globe in the space that is left, not in the window: aiming
+    // below it by half the reserve lifts it clear of the bottom chrome.
+    // The factors are under a half on purpose: lifting by the full half of the
+    // reserve centred the globe in the free space above the chrome, which sat
+    // it visibly high in the window. A little less lift drops it back towards
+    // the middle of the frame without letting the markers reach the figures.
+    const liftPx = narrow ? 0.11 * height + this.bottomReserve * 0.32 : this.bottomReserve * 0.37;
+    this.lookY = -liftPx / this.globeRadiusPx;
 
     this.cam.updateProjectionMatrix();
   }
@@ -68,6 +90,9 @@ export class Camera {
     const d = this.distance * this.dolly;
     this.cam.position.set(this.smooth.x * 0.42, this.smooth.y * 0.3 + this.lookY, d);
     this.cam.lookAt(0, this.lookY, 0);
+    // After the aim, so it turns about the line of sight rather than tipping
+    // the camera off its target.
+    if (this.roll !== 0) this.cam.rotateZ(this.roll);
 
     // The renderer would do this too, but only later in the frame. Projecting
     // world points for the DOM layer needs a valid inverse *now*, and on the

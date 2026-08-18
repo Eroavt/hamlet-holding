@@ -16,8 +16,10 @@
   visibility: hidden;
 }
 
+/* The apex of the pyramid the four markers hang under, so it carries real
+   weight rather than sitting up there as a watermark. */
 #anchor-header {
-  width: clamp(104px, 11vw, 152px);
+  width: clamp(146px, 15.5vw, 214px);
   aspect-ratio: 841 / 507;
 }
 
@@ -203,7 +205,10 @@
 #hotspots.is-rail {
   left: 50%;
   top: auto;
-  bottom: clamp(18px, 4vh, 46px);
+  /* Clears the footer rather than sharing its line. --footer-h is published by
+     App.syncFooterHeight() because the block's height depends on the language
+     and the viewport, so a fixed value would collide on one of them. */
+  bottom: calc(var(--footer-h, 96px) + clamp(14px, 2.4vh, 28px));
   width: min(660px, 92vw);
   height: auto;
   transform: translateX(-50%);
@@ -242,12 +247,9 @@
   height: 47px;
 }
 
-/* The rail occupies the footer's line, and at this altitude the strapline has
-   nothing to add anyway. */
-html[data-stage='detail'] #footer {
-  opacity: 0;
-  transition: opacity 0.5s var(--ease-out);
-}
+/* The footer stays up on every stage — the partner endorsement is meant to be
+   seen throughout. The rail therefore has to clear it rather than share the
+   line, which is what `bottom` below accounts for. */
 
 .hs__in {
   display: flex;
@@ -263,7 +265,7 @@ html[data-stage='detail'] #footer {
 }
 
 .hs__name {
-  font-size: 12px;
+  font-size: 14.5px;
   font-weight: 600;
   line-height: 1.4;
   letter-spacing: 0.15em;
@@ -377,11 +379,6 @@ html[data-stage='detail'] #footer {
   --hs-accent-lit: var(--accent-blue-lit);
 }
 
-.hs[data-accent='violet'] {
-  --hs-accent: var(--accent-violet);
-  --hs-accent-lit: var(--accent-violet-lit);
-}
-
 /* ---------------------------------------------------------- nodes (SVG) */
 
 #nodes {
@@ -404,10 +401,6 @@ html[data-stage='detail'] #footer {
   fill: var(--accent-blue-lit);
 }
 
-.node--violet {
-  fill: var(--accent-violet-lit);
-}
-
 .node-halo {
   fill: none;
   stroke-width: 1;
@@ -420,10 +413,6 @@ html[data-stage='detail'] #footer {
   stroke: var(--accent-blue-lit);
 }
 
-.node-halo--violet {
-  stroke: var(--accent-violet-lit);
-}
-
 /* ================================================================= detail */
 
 /* Centred, and sitting above the horizon rather than beside a floating object
@@ -431,10 +420,12 @@ html[data-stage='detail'] #footer {
 #detail {
   position: absolute;
   left: 50%;
-  /* The band between the mark above and the horizon below. */
-  top: 22%;
+  /* The band between the mark above and the horizon below. Lifted with the
+     globe's extra drop so the two clear each other on short landscape
+     viewports, where the sphere is at its largest relative to the height. */
+  top: 16%;
   transform: translateX(-50%);
-  width: min(760px, 88vw);
+  width: min(960px, 92vw);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -456,15 +447,19 @@ html[data-stage='detail'] #footer {
   color: var(--globe-rim);
 }
 
+/* Always one line. The sizes below are chosen against the longest title there
+   is — TRANSAKTIONS-MANAGEMENT — so `nowrap` never has to overflow to keep
+   its promise. Measured across 375 to 1920. */
 #detail-title {
   margin: 0;
   color: var(--text);
   text-shadow: 0 4px 32px rgba(1, 4, 16, 0.9);
   font-weight: 700;
-  font-size: clamp(30px, 5vw, 62px);
-  line-height: 1.02;
-  letter-spacing: 0.015em;
+  font-size: clamp(19px, 3.5vw, 46px);
+  line-height: 1.05;
+  letter-spacing: 0.012em;
   text-transform: uppercase;
+  white-space: nowrap;
 }
 
 #detail-body {
@@ -481,7 +476,7 @@ html[data-stage='detail'] #footer {
    the way entirely — so it is set small, wide-tracked and very low contrast,
    and only lifts towards legible when the pointer is actually on it. */
 #footer {
-  grid-row: 3;
+  grid-row: 4;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -491,12 +486,18 @@ html[data-stage='detail'] #footer {
   opacity: 0;
 }
 
+/* The company name carries more than the statutory links under it, so it is
+   lit rather than merely legible — a touch of glow on top of the raised
+   opacity, matching how the markers around the globe are treated. */
 #footer-legal {
   font-size: 9px;
   font-weight: 500;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.26);
+  color: rgba(255, 255, 255, 0.82);
+  text-shadow:
+    0 0 12px rgba(150, 205, 255, 0.5),
+    0 0 30px rgba(90, 165, 255, 0.28);
 }
 
 #footer-links {
@@ -517,6 +518,127 @@ html[data-stage='detail'] #footer {
   color: rgba(255, 255, 255, 0.62);
 }
 
+/* ==================================================== key figures (overview) */
+
+/*
+ * Three columns split by hairlines, as in the reference. Condensed, tightly
+ * tracked numerals against wide-tracked caption type — the contrast between
+ * those two is what the composition rests on.
+ */
+#kpi {
+  grid-row: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(14px, 2vh, 26px);
+  /* The bottom pad is the air between the figures and the partner
+     endorsement below — the two blocks were reading as one. */
+  padding: 0 var(--pad-x) clamp(78px, 10.5vh, 136px);
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Set at the same 12px as the marker captions around the globe, so the whole
+   page has one caption size. Kept dimmer and more widely tracked — it labels
+   the band rather than belonging to a single figure. */
+#kpi-heading {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.42);
+  text-align: center;
+}
+
+#kpi-list {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  width: min(1080px, 94vw);
+}
+
+.kpi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(8px, 1.4vh, 15px);
+  padding: 0 clamp(12px, 2.4vw, 40px);
+}
+
+/* Dividers between columns only — a rule on the outer edges would box the
+   group in, which the reference deliberately does not do. */
+.kpi + .kpi {
+  border-left: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+/* Weight and tracking still match the marker captions above the globe; the
+   size no longer does, since those were enlarged on their own. If the two
+   caption systems should read as one again, this is the number to follow.
+   Full white rather than --text-dim: the markers are navigation that lifts on
+   hover, these are content and have to stay legible. */
+.kpi__label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: pre-line;
+  color: var(--text);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
+}
+
+.kpi__rule {
+  display: block;
+  width: 62px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.34);
+}
+
+/* The size lives here, not on the two children: number and unit are set at the
+   same size, so keeping one declaration means they cannot drift apart. */
+.kpi__value {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.16em;
+  font-size: clamp(15px, 1.8vw, 26px);
+  color: var(--text);
+}
+
+/*
+ * The site's own sans, not a condensed display face.
+ *
+ * This previously named Oswald / Roboto Condensed / Archivo Narrow — none of
+ * which are loaded anywhere in the project — so Windows resolved the stack to
+ * Haettenschweiler, a poster face whose digits collapse into each other at any
+ * size. Tabular figures keep the columns aligned; the tight tracking is enough
+ * to hold an eleven-character number on one line without a condensed cut.
+ */
+.kpi__num {
+  font-family: var(--font-sans);
+  font-size: 1em;
+  /* Regular, same as the unit beside it. The figures are large enough to
+     carry on their own, and at this size bold turned them heavy against the
+     hairline captions above them. */
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+/* Same size and now the same weight as the figure — the client asked for both
+   at one size, and once the number stopped being bold there was nothing left
+   for the unit to be subordinate to. */
+.kpi__unit {
+  font-family: var(--font-sans);
+  font-size: 1em;
+  font-weight: 400;
+  line-height: 1;
+}
+
 /* ------------------------------------------------------- partner endorsement */
 
 /* Sits above the legal line: the endorsement is the point of this block, the
@@ -531,13 +653,29 @@ html[data-stage='detail'] #footer {
   transition: opacity 0.4s var(--ease-out);
 }
 
+/*
+ * The endorsement belongs to the overview, not to an individual division.
+ *
+ * Hidden rather than removed from the flow: taking it out would shrink the
+ * footer, and the detail-view rail is positioned off --footer-h, so the row of
+ * glyphs would jump downwards halfway through the descent. Keeping the space
+ * costs nothing on a black field.
+ */
+html[data-stage='detail'] #footer-partner {
+  opacity: 0;
+  visibility: hidden;
+}
+
 #footer-partner:hover,
 #footer-partner:focus-visible {
   opacity: 0.9;
 }
 
+/* 12px, matching #kpi-heading and the marker captions — one caption size
+   across the whole page. */
 #footer-partner-label {
-  font-size: 9.5px;
+  font-size: 12px;
+  font-weight: 600;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.55);
@@ -875,8 +1013,10 @@ html[data-stage='detail'] #footer {
     width: 100vw;
     height: auto;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 14px 4px;
+    /* Two columns, matching the two the desktop ring resolves to. Three left
+       the fourth field standing on its own in a second row. */
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px 4px;
     padding: 0 12px calc(var(--pad-y) + 26px);
   }
 
@@ -924,4 +1064,122 @@ html[data-stage='detail'] #footer {
   #cursor {
     display: none;
   }
+}
+
+/* ------------------------------------------------- the signature sequence */
+
+/*
+ * The seven in "our key figures over the past 7 years".
+ *
+ * Set as a button but drawn as the surrounding caption. No rule under it: the
+ * tell is that the digit twinkles, which in a field of stars reads as one of
+ * them rather than as a control — and a caption that catches the eye and turns
+ * out to do something is a better invitation than an underline.
+ *
+ * The letter-spacing is cancelled on the right so the tracked caption does not
+ * leave a gap between the digit and the space that follows it.
+ */
+.kpi-sig {
+  font: inherit;
+  /* A little above the caption around it. line-height is pinned to 1 so the
+     taller glyph cannot push the heading's line box open and shift the whole
+     figures band down. */
+  font-size: 1.3em;
+  line-height: 1;
+  letter-spacing: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  /* In the button's own em, so it scales with the size above and still eats
+     the tracked caption's trailing space. */
+  margin-right: -0.3em;
+  cursor: pointer;
+  animation: kpi-twinkle 3.4s var(--ease-out) infinite;
+  transition:
+    color 0.35s var(--ease-out),
+    text-shadow 0.35s var(--ease-out);
+}
+
+/* Two flashes close together, then a long dark rest. An even pulse reads as a
+   notification badge; a star does not keep time. */
+@keyframes kpi-twinkle {
+  0%,
+  58%,
+  100% {
+    color: rgba(255, 255, 255, 0.6);
+    text-shadow: 0 0 6px rgba(150, 205, 255, 0.25);
+  }
+  67% {
+    color: #fff;
+    text-shadow:
+      0 0 10px rgba(190, 226, 255, 0.95),
+      0 0 26px rgba(120, 190, 255, 0.6);
+  }
+  75% {
+    color: rgba(255, 255, 255, 0.68);
+    text-shadow: 0 0 7px rgba(150, 205, 255, 0.4);
+  }
+  84% {
+    color: #fff;
+    text-shadow:
+      0 0 15px rgba(210, 235, 255, 1),
+      0 0 36px rgba(120, 190, 255, 0.75);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .kpi-sig {
+    animation: none;
+    color: rgba(255, 255, 255, 0.9);
+    text-shadow: 0 0 10px rgba(150, 205, 255, 0.5);
+  }
+}
+
+.kpi-sig:hover,
+.kpi-sig:focus-visible {
+  animation: none;
+  color: #fff;
+  text-shadow:
+    0 0 16px rgba(190, 226, 255, 0.9),
+    0 0 38px rgba(120, 190, 255, 0.7);
+}
+
+/* The way back out. Deliberately as quiet as the footer's small print — it is
+   an exit, not a call to action. */
+#reveal-hint {
+  position: fixed;
+  left: 50%;
+  bottom: clamp(28px, 5vh, 56px);
+  transform: translateX(-50%);
+  z-index: 30;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.36);
+}
+
+/* The detonation's flash.
+   Its own layer rather than more bloom: bloom can only brighten what is
+   already lit, and the loudest frame of the sequence has to be able to take
+   the whole screen. Radial, so the edges keep some depth instead of going to
+   a flat white card. */
+#flash {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at 50% 46%,
+    #ffffff 0%,
+    rgba(214, 244, 255, 0.92) 26%,
+    rgba(120, 195, 255, 0.42) 55%,
+    transparent 78%
+  );
 }

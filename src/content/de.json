@@ -7,7 +7,13 @@
   "imprint": "Impressum",
   "privacy": "Datenschutz",
   "legalPending": "Diese Seite ist noch nicht geschrieben.",
-  "partnerLabel": "Zu unserem Exklusiv-Partner:",
+  "partnerLabel": "Zu unserem Exklusiv-Partner",
+  "kpiHeading": "Unsere Kennzahlen in den letzten 7 Jahren",
+  "kpis": {
+    "leaseVolume": "Realisiertes\nMietvertragsvolumen",
+    "developedArea": "Entwickelte\nGrund- und Nutzfläche",
+    "projectVolume": "Realisiertes\nProjektvolumen"
+  },
   "legalGermanOnly": "",
   "divisions": {
     "projectDevelopment": {
@@ -17,28 +23,18 @@
     },
     "realEstateInvestment": {
       "label": "Immobilien-\ninvestment",
-      "title": "Immobilieninvestment",
+      "title": "Immobilien-Investment",
       "body": "Wir investieren eigenes und Partnerkapital in Wohn-, Gewerbe- und Mischnutzungen in den europäischen Kernmärkten. Jeder Ankauf wird zuerst über den Cashflow gerechnet, mit definierter Haltedauer und schriftlich fixiertem Exit, bevor ein Euro fließt."
     },
     "transactionManagement": {
       "label": "Transaktions-\nmanagement",
-      "title": "Transaktionsmanagement",
+      "title": "Transaktions-Management",
       "body": "Ankaufsprüfung, Due Diligence, Strukturierung und Closing als eine Disziplin. Wir führen den gesamten Prozess auf Käufer- wie Verkäuferseite, koordinieren Berater und Finanzierer und halten den Zeitplan belastbar — von der Absichtserklärung bis zur Beurkundung."
     },
     "constructionManagement": {
       "label": "Bau-\nmanagement",
-      "title": "Baumanagement",
+      "title": "Bau-Management",
       "body": "Kosten, Termine und Qualität werden auf der Baustelle gesteuert, nicht im Nachhinein berichtet. Wir handeln als verlängerter Arm des Eigentümers bei Ausschreibung, Vergabe und Ausführung — mit transparentem Nachtragsmanagement und einem Verantwortlichen."
-    },
-    "assetManagement": {
-      "label": "Asset\nManagement",
-      "title": "Asset Management",
-      "body": "Aktive Bewirtschaftung des Bestands über die gesamte Haltedauer: Vermietungsstrategie, Mieterbetreuung, Instandhaltungsplanung und Repositionierung. Das Mandat ist einfach — Substanz sichern und den Nettoertrag steigern."
-    },
-    "advisoryManagement": {
-      "label": "Advisory\nManagement",
-      "title": "Advisory Management",
-      "body": "Unabhängige Beratung für Eigentümer, Family Offices und institutionelle Investoren. Portfoliostrategie, Restrukturierung, Finanzierung und Zweitmeinungen zu Transaktionen — von denselben Leuten, die unsere eigene Bilanz verantworten."
     }
   }
 }

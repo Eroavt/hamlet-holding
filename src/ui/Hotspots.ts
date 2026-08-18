@@ -5,6 +5,19 @@ import type { Dictionary } from '@/content/i18n';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
+/**
+ * Divisions whose glyph has been traced from supplied artwork and approved.
+ *
+ * The remaining fields render their frame only. Add an id here once its mark
+ * is final — that is the single switch, no markup changes needed.
+ */
+const APPROVED_ICONS = new Set([
+  'projectDevelopment',
+  'realEstateInvestment',
+  'transactionManagement',
+  'constructionManagement',
+]);
+
 interface Tile {
   division: Division;
   root: HTMLButtonElement;
@@ -87,9 +100,10 @@ export class Hotspots {
 
       const glyph = document.createElement('span');
       glyph.className = 'hs__glyph';
-      // Every field keeps its frame; only the divisions cleared for their
-      // final mark render one for now, per direction — the rest stay empty.
-      if (d.id === 'projectDevelopment' || d.id === 'assetManagement') {
+      // Every field keeps its frame; only the divisions whose final mark has
+      // been signed off render one. The rest stay empty until their artwork
+      // arrives — an approximate glyph is worse than none.
+      if (APPROVED_ICONS.has(d.id)) {
         glyph.innerHTML = `<svg viewBox="${ICON_VIEWBOX}" aria-hidden="true">${d.icon}</svg>`;
       }
 

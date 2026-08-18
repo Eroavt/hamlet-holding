@@ -34,6 +34,8 @@ export class Logo {
   private idleTimer = 0;
   private loops: gsap.core.Timeline[] = [];
   private reduced: boolean;
+  /** True once the mark has stopped being the call to action. */
+  private settled = false;
 
   onActivate: (() => void) | null = null;
 
@@ -84,6 +86,7 @@ export class Logo {
 
   /** Starts the breathing and the radar pings. */
   awaken(): void {
+    this.settled = false;
     if (this.reduced) return;
 
     this.loops.push(
@@ -108,10 +111,17 @@ export class Logo {
     this.armIdleNudge();
   }
 
-  /** After a while without input, insist a little harder. */
+  /**
+   * After a while without input, insist a little harder.
+   *
+   * Only ever while the mark still *is* the call to action. Once it has moved
+   * into the header it is a wordmark, and a wordmark that keeps pulsing reads
+   * as a glitch — `onLeave` re-arms this on every pointer exit, which is how
+   * it kept firing on the selection screen.
+   */
   private armIdleNudge(): void {
     clearTimeout(this.idleTimer);
-    if (this.reduced) return;
+    if (this.reduced || this.settled) return;
     this.idleTimer = window.setTimeout(() => {
       gsap
         .timeline()
@@ -147,6 +157,7 @@ export class Logo {
 
   /** Stops the idle behaviour once the user has committed. */
   settle(): void {
+    this.settled = true;
     clearTimeout(this.idleTimer);
     this.loops.forEach((tl) => tl.kill());
     this.loops.length = 0;

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hamlet-holding.vercel.app/sitemap.xml

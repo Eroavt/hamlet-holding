@@ -76,6 +76,8 @@ export class Legal {
   private copy!: Dictionary;
 
   onOpen: (() => void) | null = null;
+  /** Fired whenever the overlay opens or closes, so the URL can follow it. */
+  onRoute: ((page: LegalPage | null) => void) | null = null;
 
   constructor(root: ParentNode = document) {
     this.el = root.querySelector<HTMLElement>('#legal')!;
@@ -129,15 +131,17 @@ export class Legal {
     this.body.scrollTop = 0;
   }
 
-  open(page: LegalPage): void {
+  open(page: LegalPage, silent = false): void {
     this.render(page);
+    if (!silent) this.onRoute?.(page);
     this.el.hidden = false;
     this.onOpen?.();
     gsap.fromTo(this.el, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' });
     this.close.focus();
   }
 
-  hide(): void {
+  hide(silent = false): void {
+    if (!this.el.hidden && !silent) this.onRoute?.(null);
     gsap.to(this.el, {
       opacity: 0,
       duration: 0.3,

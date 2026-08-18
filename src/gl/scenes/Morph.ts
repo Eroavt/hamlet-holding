@@ -46,12 +46,17 @@ export class Morph {
         uHaloOpacity: { value: 1 },
         uFocusAmt: { value: 0 },
         uFocus: { value: this.focus },
+        uWord: { value: 0 },
+        uWordScale: { value: 4 },
+        uWordBlast: { value: 9 },
+        uWordY: { value: 0 },
         uCurl: { value: curl },
         // The radial ramp lifted off the reference: white-hot core, cyan
-        // shell, violet ring, deep blue outer cloud.
+        // shell, mid blue ring, deep blue outer cloud — kept to one family
+        // of blues end to end, no violet band.
         uCoreColor: { value: new Color(0xd6f4ff) },
         uMidColor: { value: new Color(0x06c0fd) },
-        uFarColor: { value: new Color(0x8f4ed0) },
+        uFarColor: { value: new Color(0x2f6fe0) },
         uEdgeColor: { value: new Color(0x14265f) },
       },
       transparent: true,
@@ -71,13 +76,36 @@ export class Morph {
    * more: every particle begins at radius zero, so before the click there is
    * literally nothing on screen.
    */
-  setData(result: BuildResult, count: number): void {
+  setData(result: BuildResult, count: number, word: Float32Array): void {
     this.geo.setAttribute('position', new BufferAttribute(result.positions, 3));
     this.geo.setAttribute('aMeta', new BufferAttribute(result.meta, 4));
     this.geo.setAttribute('aRole', new BufferAttribute(Float32Array.from(result.role), 1));
     this.geo.setAttribute('aLand', new BufferAttribute(Float32Array.from(result.land), 1));
+    this.geo.setAttribute('aWord', new BufferAttribute(word, 4));
     this.geo.setDrawRange(0, count);
     this.points.visible = true;
+  }
+
+  /** 0 = the scene as built, 1 = settled into the letters. */
+  set word(v: number) {
+    this.material.uniforms.uWord.value = v;
+  }
+
+  get word(): number {
+    return this.material.uniforms.uWord.value as number;
+  }
+
+  /**
+   * Half the frame width in world units, so the line always spans the same
+   * share of the viewport. Set from the camera, not baked.
+   */
+  set wordScale(v: number) {
+    this.material.uniforms.uWordScale.value = v;
+  }
+
+  /** The camera's aim height, so the reveal is centred in the frame. */
+  set wordY(v: number) {
+    this.material.uniforms.uWordY.value = v;
   }
 
   set haloOpacity(v: number) {

@@ -83,7 +83,8 @@ svg {
   inset: 0;
   z-index: 10;
   display: grid;
-  grid-template-rows: auto 1fr auto;
+  /* topbar · stage · key figures · footer */
+  grid-template-rows: auto 1fr auto auto;
   pointer-events: none;
 }
 

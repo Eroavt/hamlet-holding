@@ -1,6 +1,8 @@
 import gsap from 'gsap';
 import { Group, Vector3, type Data3DTexture } from 'three';
 import { Starfield } from './scenes/Starfield';
+import { Void } from './scenes/Void';
+import { Meteors } from './scenes/Meteors';
 import { Nebula } from './scenes/Nebula';
 import { Morph } from './scenes/Morph';
 import { Buildings } from './scenes/Buildings';
@@ -8,6 +10,7 @@ import { CityLights } from './scenes/CityLights';
 import { GlobeShell } from './scenes/GlobeShell';
 import { DIVISIONS } from '@/content/divisions';
 import { buildCurlTexture } from './data/curlField';
+import { buildWordPoints } from './data/wordPoints';
 import { buildIcoGraph } from './data/icoGraph';
 import type { BuildRequest, BuildResult } from './data/landmask.worker';
 import type { Renderer } from './Renderer';
@@ -18,12 +21,39 @@ const GRID_W = 1024;
 const GRID_H = 512;
 const Y_AXIS = new Vector3(0, 1, 0);
 
+/** The line the particles spell out when the founder's name is clicked. */
+const WORD = 'GOD HAS A PLAN';
+/** Event horizon radius as a share of half the frame width. Mirrors VOID_R in
+ *  morph.glsl.ts — the two have to agree exactly or the disc shows a seam. */
+const VOID_R = 0.23;
+
+/**
+ * The face the globe presents when it first forms — central Europe, where the
+ * company operates from.
+ *
+ * Rotating a point p about Y by `a` gives z' = c·pz − s·px, which is greatest
+ * at a = atan2(−px, pz); that is the angle bringing the point to face the
+ * camera. Same relation `aimAt()` uses, evaluated once for the start value.
+ */
+const FIRST_FACE = { lat: 50, lon: 10 };
+
+function spinFacing(latDeg: number, lonDeg: number): number {
+  const phi = ((90 - latDeg) * Math.PI) / 180;
+  const theta = ((lonDeg + 180) * Math.PI) / 180;
+  const s = Math.sin(phi);
+  const x = -s * Math.cos(theta);
+  const z = s * Math.sin(theta);
+  return Math.atan2(-x, z);
+}
+
 export class World {
   /** Holds everything that belongs to the globe, so the detail view can move
    *  the whole body without touching the camera or the background. */
   readonly root = new Group();
 
   starfield!: Starfield;
+  void_!: Void;
+  meteors!: Meteors;
   nebula!: Nebula;
   morph!: Morph;
   buildings!: Buildings;
@@ -37,7 +67,7 @@ export class World {
   /** Additional rotation used to bring a region round to face the camera. */
   aim = 0;
 
-  private spin = 0;
+  private spin = spinFacing(FIRST_FACE.lat, FIRST_FACE.lon);
 
   /** Rotation the globe is actually drawn at, aim offset included. */
   get totalSpin(): number {
@@ -71,6 +101,15 @@ export class World {
 
     this.starfield = new Starfield(this.quality.stars);
     this.renderer.scene.add(this.starfield.points);
+
+    // Few on purpose, and fewer than that again. A streak has to read as luck
+    // rather than as a meteor shower.
+    this.meteors = new Meteors();
+    this.layoutMeteors();
+    this.renderer.scene.add(this.meteors.mesh);
+
+    this.void_ = new Void();
+    this.renderer.scene.add(this.void_.mesh);
     this.renderer.scene.add(this.root);
     onProgress(0.22);
 
@@ -78,7 +117,14 @@ export class World {
     onProgress(0.58);
 
     this.morph = new Morph(this.curl);
-    this.morph.setData(data, this.quality.particles);
+    // Baked at boot with everything else. It costs one canvas rasterisation
+    // and stays in the same buffer as the globe, so the reveal is a uniform
+    // sweep rather than an upload in the middle of an animation.
+    this.morph.setData(
+      data,
+      this.quality.particles,
+      buildWordPoints(WORD, this.quality.particles).data,
+    );
     this.root.add(this.morph.points);
 
     this.buildings = new Buildings();
@@ -106,6 +152,7 @@ export class World {
     onProgress(0.88);
 
     this.setDpr(this.renderer.gl.getPixelRatio());
+    this.fitWord(this.camera.cam.fov, this.camera.cam.aspect);
     await this.renderer.gl.compileAsync(this.renderer.scene, this.camera.cam);
     onProgress(1);
   }
@@ -151,6 +198,40 @@ export class World {
     void height;
     this.nebula.fit(fov, aspect);
     this.setDpr(dpr);
+    // The streaks are composed against the frame, and the viewing distance is
+    // derived from the viewport — so the frame moving means recomposing.
+    this.layoutMeteors();
+    this.fitWord(fov, aspect);
+  }
+
+  /**
+   * Sizes the whole reveal to the frame.
+   *
+   * Everything in it — the text, the galaxy's radii, the event horizon — is a
+   * constant share of one number, so this is the entire responsiveness of the
+   * sequence: half the world-space width the camera can see at the origin.
+   * The vertical offset comes with it, because the globe is deliberately
+   * lifted clear of the chrome and anything built around the world origin
+   * would inherit that lift and sit high in the frame.
+   */
+  private fitWord(fov: number, aspect: number): void {
+    const halfH = this.camera.distance * Math.tan((fov * Math.PI) / 360);
+    const scale = halfH * aspect;
+    this.morph.wordScale = scale;
+    this.morph.wordY = this.camera.lookY;
+    // Has to track the shader's VOID_R exactly, or the black disc either
+    // leaves a rim of sky showing or eats the bright inner edge of the vortex.
+    this.void_.radius = scale * VOID_R;
+    this.void_.mesh.position.y = this.camera.lookY;
+  }
+
+  private layoutMeteors(): void {
+    this.meteors.layout(
+      this.camera.distance,
+      this.camera.lookY,
+      this.camera.cam.aspect,
+      this.camera.cam.fov,
+    );
   }
 
   /** Pass the un-rotated direction; the spin is applied every frame. */
@@ -170,6 +251,21 @@ export class World {
     const TAU = Math.PI * 2;
     delta = ((((delta + Math.PI) % TAU) + TAU) % TAU) - Math.PI;
     gsap.to(this, { aim: this.aim + delta, duration: 1.3, ease: 'power3.inOut', overwrite: 'auto' });
+  }
+
+  /**
+   * Drives the aim directly, for a drag that should track the pointer.
+   * Kills any running tween first — otherwise the tween keeps writing and the
+   * globe fights the hand holding it.
+   */
+  setAim(value: number): void {
+    gsap.killTweensOf(this);
+    this.aim = value;
+  }
+
+  /** Eases the aim to an absolute value — used to spring back after a drag. */
+  aimTo(value: number): void {
+    gsap.to(this, { aim: value, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
   }
 
   /** Unwinds the aim offset back to the free-running rotation. */
@@ -198,6 +294,7 @@ export class World {
     }
 
     this.starfield.update(dt, elapsed);
+    this.meteors.update(dt, elapsed);
     this.nebula.update(dt, elapsed);
     this.morph.update(dt, elapsed);
     this.shell.update(dt);
@@ -205,6 +302,8 @@ export class World {
 
   dispose(): void {
     this.starfield?.dispose();
+    this.void_?.dispose();
+    this.meteors?.dispose();
     this.nebula?.dispose();
     this.morph?.dispose();
     this.buildings?.dispose();
