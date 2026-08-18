@@ -47,8 +47,8 @@ only place that knows about both the WebGL side and the DOM side.
 
 - **Copy** lives in `src/content/de.json`, `en.json` and `ru.json`. Keys must
   match the `id` of each entry in `src/content/divisions.ts`.
-- **Key figures** live in `src/content/kpis.ts`. Read the warning at the top of
-  that file before publishing — two of the three numbers are not Hamlet's.
+- **Key figures** live in `src/content/kpis.ts`, with a note recording where
+  each number came from.
 - **Division placement** around the globe is polar: `angle` in degrees from
   twelve o'clock, `dist` as a multiple of the globe's projected radius. Those
   numbers form a pyramid under the mark; twelve o'clock must stay empty
@@ -117,9 +117,6 @@ division link would 404.
 
 ## Known gaps
 
-- **Two of the three key figures in `src/content/kpis.ts` are another
-  company's published numbers**, taken from a reference screenshot while the
-  layout was being built. They must be replaced before the site is announced.
 - The Russian translation has not been reviewed by a native speaker.
 - `App.mountDebug` / `App.mountCaptureApi` are unreachable in production but
   their bodies still ship — roughly 2.3 kB gzip of dead code. Moving them into

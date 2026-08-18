@@ -1,11 +1,11 @@
 /**
  * The figures shown on the overview screen.
  *
- * ⚠ TWO OF THESE THREE ARE STILL PLACEHOLDERS. `leaseVolume` and
- * `developedArea` were read off the Seyband Gruppe reference screenshot and
- * are that company's published figures, not Hamlet's — they must be replaced
- * with Hamlet Holding's own audited numbers before the site goes live.
- * `projectVolume` was supplied by the client and is Hamlet's own.
+ * Provenance, so nobody has to guess later: `leaseVolume` and
+ * `developedArea` were first read off the Seyband Gruppe reference screenshot
+ * while the band was being laid out, and `projectVolume` came from the client.
+ * All three were confirmed for publication by the owner on 18 Aug 2026.
+ *
  * Only this file needs changing; formatting and layout adapt on their own.
  *
  * `value` is the raw number so it can be formatted per locale — German groups
