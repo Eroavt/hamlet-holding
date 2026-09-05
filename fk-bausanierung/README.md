@@ -8,12 +8,11 @@ kompletten Ordner auf den Webspace laden.
 
 | Reihenfolge | Abschnitt              | Anker         |
 |-------------|------------------------|---------------|
-| 1 | Eröffnung — „Bausanierung im Allgäu und Umgebung", Porträt des Inhabers, Vertrauensleiste | `#start` |
+| 1 | Eröffnung — „Bausanierung in Kempten und Allgäu", Google-Bewertung, Porträt des Inhabers, Vertrauensleiste | `#start` |
 | 2 | 01 Leistungen — 9 Kacheln, jede öffnet das Kontaktfenster mit vorausgewählter Leistung | `#leistungen` |
-| 3 | 02 Ablauf — die Schritte von der Anfrage bis zur Übergabe | `#ablauf` |
-| 4 | 03 Warum wir — 4 kurze Karten **plus die Kennzahlen** | `#warum` |
-| 5 | 04 Projekte — Karussell mit 10 Fotos | `#projekte` |
-| 6 | Abschlussband und Fußzeile | — |
+| 3 | 02 Warum wir — 4 kurze Karten **plus die Kennzahlen** | `#warum` |
+| 4 | 03 Projekte — Karussell mit 10 Fotos | `#projekte` |
+| 5 | Abschlussband und Fußzeile | — |
 
 **Kontakt:** steht nicht mehr in der Seite, sondern öffnet sich als Fenster —
 über „Kontakt" oben, „Kostenlos beraten lassen" im Startbereich, „Eigenes

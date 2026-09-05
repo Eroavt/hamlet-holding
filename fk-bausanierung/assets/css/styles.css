@@ -8,7 +8,7 @@
    · jede Sektion endet an einer Stelle, die zur Anfrage führt
 
    Aufbau:  Tokens · Basis · Bausteine · Kopfleiste · Navigation · Hero ·
-            Leistungen · Ablauf · Warum wir · Projekte · CTA · Fußzeile ·
+            Leistungen · Warum wir · Projekte · CTA · Fußzeile ·
             Schnellkontakt · Kontaktfenster · Großansicht · Unterseiten ·
             Responsive
    ===================================================================== */
@@ -92,8 +92,7 @@ ul,ol{ margin:0; padding:0; list-style:none; }
 .eyebrow--line.center::after{ content:""; width:46px; height:1px; background:var(--accent-hi); flex:none; }
 
 /* Auf dunklem Grund */
-.hero .eyebrow, .process .eyebrow, .showcase .eyebrow, .modal .eyebrow{ color:rgba(244,247,251,.62); }
-.process .eyebrow--num span,
+.hero .eyebrow, .showcase .eyebrow, .modal .eyebrow{ color:rgba(244,247,251,.62); }
 .showcase .eyebrow--num span{ background:rgba(74,138,219,.16); color:var(--accent-hi); }
 
 .section-title{
@@ -109,7 +108,7 @@ ul,ol{ margin:0; padding:0; list-style:none; }
   max-width:60ch; color:var(--text-soft); font-size:17.5px;
 }
 .sec-head--center .section-lead{ margin-inline:auto; }
-.process .section-lead, .showcase .section-lead, .modal .section-lead{ color:rgba(244,247,251,.6); }
+.showcase .section-lead, .modal .section-lead{ color:rgba(244,247,251,.6); }
 
 .grid{ display:grid; gap:26px; }
 .grid--3{ grid-template-columns:repeat(3,minmax(0,1fr)); }
@@ -277,14 +276,32 @@ ul,ol{ margin:0; padding:0; list-style:none; }
 }
 .hero__copy{ max-width:760px; }
 
-.hero__badge{
-  display:inline-flex; align-items:center; gap:10px;
-  padding:9px 18px 9px 14px; border-radius:999px;
-  background:rgba(74,138,219,.14); border:1px solid rgba(74,138,219,.35);
+/* Google-Bewertung in der Eröffnung */
+.rating{
+  display:inline-grid; grid-template-columns:auto auto auto;
+  grid-template-areas:"g score stars" "g text text";
+  align-items:center; gap:1px 13px;
+  padding:13px 22px 13px 18px; margin-bottom:28px;
+  border-radius:18px; text-decoration:none; color:inherit;
+  background:rgba(10,21,38,.6); border:1px solid rgba(244,247,251,.13);
   backdrop-filter:blur(10px);
-  font-size:14px; font-weight:600; color:var(--cream); margin-bottom:26px;
+  transition:border-color .25s ease, transform .25s ease;
 }
-.hero__badge svg{ color:var(--accent-hi); }
+a.rating:hover{ border-color:var(--accent-hi); transform:translateY(-2px); }
+.rating__g{ grid-area:g; display:grid; place-items:center; }
+.rating__score{
+  grid-area:score; font-size:27px; font-weight:800; line-height:1;
+  letter-spacing:-.02em; color:var(--cream);
+}
+.rating__stars{ grid-area:stars; display:flex; gap:2px; color:var(--accent-hi); }
+.rating__text{ grid-area:text; font-size:13.5px; color:rgba(244,247,251,.6); }
+
+@media (max-width:420px){
+  .rating{ padding:11px 16px; gap:1px 10px; }
+  .rating__score{ font-size:23px; }
+  .rating__stars svg{ width:15px; height:15px; }
+  .rating__text{ font-size:12.5px; }
+}
 
 .hero__title{
   font-family:var(--serif);
@@ -376,28 +393,6 @@ ul,ol{ margin:0; padding:0; list-style:none; }
 .tile:hover .tile__link,
 .tile:focus-visible .tile__link{ opacity:1; transform:none; }
 .tile:hover .tile__link{ gap:12px; }
-
-/* ------------------------------ Ablauf ------------------------------ */
-.process{ background:var(--ink); color:var(--cream); padding:106px 0 116px; }
-
-.steps{
-  display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:26px;
-  position:relative;
-}
-.steps::before{
-  content:""; position:absolute; left:6%; right:6%; top:29px; height:1px;
-  background:linear-gradient(90deg, transparent, var(--ink-3) 12%, var(--ink-3) 88%, transparent);
-}
-.step{ position:relative; text-align:center; padding:0 8px; }
-.step__num{
-  display:grid; place-items:center; width:58px; height:58px; margin:0 auto 20px;
-  border-radius:50%; background:var(--ink); border:1px solid var(--ink-3);
-  color:var(--accent-hi); font-family:var(--serif); font-size:22px; font-weight:600;
-  position:relative; z-index:2;
-}
-.step h3{ font-family:var(--serif); font-size:20px; font-weight:600; margin-bottom:10px; }
-.step p{ color:var(--on-dark); font-size:15.5px; }
-.process__cta{ text-align:center; margin-top:52px; }
 
 /* ---------------------------- Warum wir ---------------------------- */
 .why{ background:var(--sand); color:var(--text); padding:106px 0 110px; }
@@ -512,20 +507,6 @@ ul,ol{ margin:0; padding:0; list-style:none; }
 
 /* ------------------------------ Fußzeile ------------------------------ */
 .footer{ background:var(--ink-deep); color:rgba(244,247,251,.7); padding:0 0 30px; }
-
-.area{
-  display:flex; align-items:center; gap:20px; flex-wrap:wrap;
-  padding:34px 0; border-bottom:1px solid rgba(244,247,251,.08);
-}
-.area__label{
-  font-size:12.5px; letter-spacing:.18em; text-transform:uppercase;
-  color:var(--accent-hi); font-weight:700; flex:none;
-}
-.area__list{ display:flex; flex-wrap:wrap; gap:10px; }
-.area__list li{
-  font-size:14px; color:rgba(244,247,251,.75);
-  border:1px solid rgba(244,247,251,.12); border-radius:999px; padding:5px 14px;
-}
 
 .footer__grid{ display:grid; grid-template-columns:1.6fr 1fr 1fr .8fr; gap:40px; padding:52px 0; }
 .footer h3{ font-size:13px; letter-spacing:.18em; text-transform:uppercase; color:var(--cream); margin-bottom:18px; }

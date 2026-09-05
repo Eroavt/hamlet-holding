@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FK Bausanierung Kastrati — Bausanierung im Allgäu und Umgebung</title>
+<title>FK Bausanierung Kastrati — Bausanierung in Kempten und Allgäu</title>
 <meta name="description" content="FK Bausanierung Kastrati aus Kempten: Bodenverlegung, Trockenbau, Fliesen, Malerarbeiten, Hausmeisterservice, Gebäudereinigung, Garten- und Landschaftsbau, Winterdienst sowie Abriss und Entkernung — alles aus einer Hand, zum Festpreis.">
 <meta name="theme-color" content="#0A1526">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="FK Bausanierung Kastrati — Bausanierung im Allgäu">
+<meta property="og:title" content="FK Bausanierung Kastrati — Bausanierung in Kempten und Allgäu">
 <meta property="og:description" content="Neun Gewerke aus einer Hand, persönlich betreut vom Inhaber, zum verbindlichen Festpreis.">
 <meta property="og:image" content="images/hero/hero.jpg">
 <meta property="og:locale" content="de_DE">
@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="images/hero/hero.jpg">
-<link rel="stylesheet" href="assets/css/styles.css?v=3">
+<link rel="stylesheet" href="assets/css/styles.css?v=4">
 
 <!-- ===================================================================
      TODO vor dem Livegang: E-Mail-Adresse und die drei ungeprüften
@@ -39,6 +39,12 @@
     "postalCode": "87435",
     "addressLocality": "Kempten (Allgäu)",
     "addressCountry": "DE"
+  },
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "5.0",
+    "reviewCount": "15",
+    "bestRating": "5"
   },
   "areaServed": ["Kempten", "Oberallgäu", "Ostallgäu", "Unterallgäu", "Sonthofen", "Immenstadt", "Memmingen", "Kaufbeuren", "Marktoberdorf"],
   "openingHoursSpecification": [{
@@ -76,7 +82,6 @@
 
     <nav class="nav__links" id="navLinks" aria-label="Hauptnavigation">
       <a href="#leistungen">Leistungen</a>
-      <a href="#ablauf">Ablauf</a>
       <a href="#warum">Warum wir</a>
       <a href="#projekte">Projekte</a>
       <a class="btn btn--accent btn--sm" href="#kontakt">Kostenlos beraten lassen</a>
@@ -97,14 +102,31 @@
 
   <div class="hero__inner">
     <div class="hero__copy">
-      <p class="hero__badge">
-        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M12 2 4 6v6c0 5 3.4 9.4 8 10 4.6-.6 8-5 8-10V6l-8-4Zm-1.2 13.2L7.6 12l1.4-1.4 1.8 1.8 4.2-4.2 1.4 1.4-5.6 5.6Z"/></svg>
-        Neun Gewerke · ein Ansprechpartner
+      <!-- Google-Bewertung. TODO: Adresse des Google-Profils eintragen, dann
+           wird aus dem <p> ein <a href="..." target="_blank" rel="noopener">. -->
+      <p class="rating">
+        <span class="rating__g" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22">
+            <path fill="#4285F4" d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5a5.6 5.6 0 0 1-2.4 3.6v3h3.9c2.3-2.1 3.5-5.2 3.5-8.8Z"/>
+            <path fill="#34A853" d="M12 24c3.2 0 5.9-1.1 7.9-2.9l-3.9-3c-1.1.7-2.5 1.2-4 1.2-3.1 0-5.7-2.1-6.6-4.9H1.4v3.1A12 12 0 0 0 12 24Z"/>
+            <path fill="#FBBC05" d="M5.4 14.4a7.2 7.2 0 0 1 0-4.6V6.7H1.4a12 12 0 0 0 0 10.8l4-3.1Z"/>
+            <path fill="#EA4335" d="M12 4.8c1.8 0 3.4.6 4.6 1.8l3.5-3.5A12 12 0 0 0 1.4 6.7l4 3.1C6.3 6.9 8.9 4.8 12 4.8Z"/>
+          </svg>
+        </span>
+        <strong class="rating__score">5,0</strong>
+        <span class="rating__stars" role="img" aria-label="5 von 5 Sternen">
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="m12 17.3 6.2 3.7-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7-1.6 7z"/></svg>
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="m12 17.3 6.2 3.7-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7-1.6 7z"/></svg>
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="m12 17.3 6.2 3.7-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7-1.6 7z"/></svg>
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="m12 17.3 6.2 3.7-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7-1.6 7z"/></svg>
+          <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true"><path fill="currentColor" d="m12 17.3 6.2 3.7-1.6-7 5.4-4.7-7.1-.6L12 2 9.1 8.7 2 9.3l5.4 4.7-1.6 7z"/></svg>
+        </span>
+        <span class="rating__text">15 Bewertungen auf Google</span>
       </p>
 
       <h1 class="hero__title">
-        Bausanierung im<br>
-        <span class="accent">Allgäu und Umgebung.</span>
+        Bausanierung in<br>
+        <span class="accent">Kempten und Allgäu.</span>
       </h1>
 
       <p class="hero__text">
@@ -247,53 +269,11 @@
     </div>
   </div>
 </section>
-
-<!-- ============================ 02 — ABLAUF ============================ -->
-<section class="process" id="ablauf">
-  <div class="wrap">
-    <header class="sec-head sec-head--center">
-      <p class="eyebrow eyebrow--num center"><span>02</span> Ablauf</p>
-      <h2 class="section-title light">In vier Schritten zum fertigen Projekt.</h2>
-      <p class="section-lead center">
-        Kein Papierkrieg, keine Überraschungen — Sie wissen von Anfang an, was
-        wann passiert und was es kostet.
-      </p>
-    </header>
-
-    <ol class="steps">
-      <li class="step reveal" style="--i:0">
-        <span class="step__num">1</span>
-        <h3>Anfrage</h3>
-        <p>Kurz schildern, worum es geht — telefonisch oder über das Formular.</p>
-      </li>
-      <li class="step reveal" style="--i:1">
-        <span class="step__num">2</span>
-        <h3>Besichtigung &amp; Festpreis</h3>
-        <p>Wir kommen vorbei, messen auf und legen einen verbindlichen Preis fest.</p>
-      </li>
-      <li class="step reveal" style="--i:2">
-        <span class="step__num">3</span>
-        <h3>Ausführung</h3>
-        <p>Alle Gewerke laufen nach Plan, koordiniert vom Inhaber persönlich.</p>
-      </li>
-      <li class="step reveal" style="--i:3">
-        <span class="step__num">4</span>
-        <h3>Übergabe</h3>
-        <p>Gemeinsame Abnahme, besenrein übergeben — erst dann sind wir fertig.</p>
-      </li>
-    </ol>
-
-    <p class="process__cta">
-      <a class="btn btn--accent" href="#kontakt">Schritt 1 starten — kostenlos beraten lassen</a>
-    </p>
-  </div>
-</section>
-
 <!-- ============================ 03 — WARUM WIR ============================ -->
 <section class="why" id="warum">
   <div class="wrap">
     <header class="sec-head sec-head--center">
-      <p class="eyebrow eyebrow--num center"><span>03</span> Warum FK Bausanierung</p>
+      <p class="eyebrow eyebrow--num center"><span>02</span> Warum FK Bausanierung</p>
       <h2 class="section-title">Was uns auszeichnet</h2>
     </header>
 
@@ -343,7 +323,7 @@
 
   <div class="wrap">
     <header class="sec-head sec-head--center">
-      <p class="eyebrow eyebrow--num center"><span>04</span> Referenzen</p>
+      <p class="eyebrow eyebrow--num center"><span>03</span> Referenzen</p>
       <h2 class="section-title light">Unsere Projekte</h2>
       <p class="section-lead center">
         Ausgeführte Arbeiten, fotografiert auf unseren eigenen Baustellen.
@@ -431,17 +411,6 @@
 
 <!-- ============================ FUSSZEILE ============================ -->
 <footer class="footer">
-  <div class="wrap">
-    <div class="area">
-      <p class="area__label">Einsatzgebiet</p>
-      <ul class="area__list">
-        <li>Kempten</li><li>Oberallgäu</li><li>Ostallgäu</li><li>Unterallgäu</li>
-        <li>Sonthofen</li><li>Immenstadt</li><li>Memmingen</li><li>Kaufbeuren</li>
-        <li>Marktoberdorf</li><li>Umgebung auf Anfrage</li>
-      </ul>
-    </div>
-  </div>
-
   <div class="wrap footer__grid">
     <div>
       <a class="brand brand--footer" href="#start">
@@ -449,7 +418,7 @@
              alt="FK Bausanierung Kastrati">
       </a>
       <p class="footer__text">
-        Bausanierung, Ausbau und Gebäudebetreuung im Allgäu und Umgebung.
+        Bausanierung, Ausbau und Gebäudebetreuung in Kempten und im Allgäu.
         Alles aus einer Hand, zum verbindlichen Festpreis.
       </p>
     </div>
@@ -656,6 +625,6 @@
   </button>
 </div>
 
-<script src="assets/js/main.js?v=3" defer></script>
+<script src="assets/js/main.js?v=4" defer></script>
 </body>
 </html>
