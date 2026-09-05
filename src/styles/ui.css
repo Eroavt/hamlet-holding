@@ -49,6 +49,18 @@
   letter-spacing: 0.16em;
   color: var(--text-faint);
   transition: color 0.3s var(--ease-out);
+  /* The glyphs are 19x13; the *target* has to be finger-sized. Padding plus a
+     negative margin looked equivalent but is not: #lang is absolutely
+     positioned and shrink-to-fit, so the padding widened it from 50 px to
+     95 px and drove it into the mark at 320 px. A pseudo-element cannot
+     affect layout at all. */
+  position: relative;
+}
+
+.lang__btn::after {
+  content: '';
+  position: absolute;
+  inset: -14px -10px;
 }
 
 .lang__btn:hover,
@@ -170,7 +182,6 @@
 }
 
 .hs {
-  --dist-scale: 1;
   position: absolute;
   left: 0;
   top: 0;
@@ -188,13 +199,9 @@
     );
 }
 
-/* Between the tile grid breakpoint and a comfortable desktop the ring would
-   push the side labels off screen, so it is drawn in. */
-@media (max-width: 1180px) {
-  .hs {
-    --dist-scale: 0.76;
-  }
-}
+/* --dist-scale is solved per viewport in Camera.solveRing and published by
+   App.publishLayout — the ring is pulled in exactly as far as it needs to be,
+   rather than by a fixed amount at a guessed breakpoint. */
 
 /* ------------------------------------------------- detail view: the rail ---
    In the detail view the globe has swelled and dropped, so the annotation ring
@@ -500,17 +507,26 @@
     0 0 30px rgba(90, 165, 255, 0.28);
 }
 
+/* Same trick as the language switch: a 10 px line of type is legible but not
+   tappable, so the target is padded out without moving the type. */
 #footer-links {
   display: flex;
   gap: 26px;
 }
 
 #footer-links a {
+  position: relative;
   font-size: 8.5px;
   letter-spacing: 0.24em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.16);
   transition: color 0.35s var(--ease-out);
+}
+
+#footer-links a::after {
+  content: '';
+  position: absolute;
+  inset: -13px -8px;
 }
 
 #footer-links a:hover,
@@ -551,18 +567,26 @@
   text-align: center;
 }
 
+/* The three captions wrap to different line counts once the columns narrow —
+   two lines, then three — which left the rules and the figures sitting at
+   three different heights. Subgrid puts caption, rule and figure on shared
+   rows, so they line up across the band at any width without reserving empty
+   space for a wrap that has not happened. */
 #kpi-list {
   margin: 0;
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-rows: auto auto auto;
+  row-gap: clamp(8px, 1.4vh, 15px);
   width: min(1080px, 94vw);
 }
 
 .kpi {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: clamp(8px, 1.4vh, 15px);
+  display: grid;
+  grid-template-rows: subgrid;
+  grid-row: span 3;
+  justify-items: center;
+  align-content: start;
   padding: 0 clamp(12px, 2.4vw, 40px);
 }
 
@@ -1002,57 +1026,337 @@ html[data-stage='detail'] #footer-partner {
   }
 }
 
-/* Below this width the polar ring would run off both edges, so the tiles
-   become a grid under the globe instead. The globe itself is lifted by the
-   camera fit, which constrains on width as well as height. */
-@media (max-width: 760px) {
-  #hotspots {
-    left: 0;
-    top: auto;
-    bottom: 0;
-    width: 100vw;
-    height: auto;
-    display: grid;
-    /* Two columns, matching the two the desktop ring resolves to. Three left
-       the fourth field standing on its own in a second row. */
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px 4px;
-    padding: 0 12px calc(var(--pad-y) + 26px);
+/* ------------------------------------------------------- the grid fallback ---
+   When Camera.solveRing finds no scale at which the ring fits, the markers
+   drop into a grid under the globe.
+
+   It lives *inside* #stage, which is row 2 of the #ui grid, so the key figures
+   (row 3) and the footer (row 4) reserve their own space. Anchoring it to the
+   viewport instead is what put the markers 91 px through the footer: two fixed
+   layers both pinned to the bottom edge cannot avoid each other. */
+html[data-layout='grid'] #hotspots:not(.is-rail) {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: 0;
+  width: auto;
+  height: auto;
+  display: grid;
+  /* Two columns, matching the two the ring resolves to. */
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(10px, 2.2vh, 20px) 4px;
+  padding: 0 12px clamp(6px, 1.4vh, 14px);
+  justify-items: center;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail)::before {
+  content: '';
+  position: absolute;
+  inset: -56px 0 0;
+  background: linear-gradient(to top, var(--bg-void) 46%, transparent);
+  z-index: -1;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs {
+  position: static;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+  transform: none;
+}
+
+/* These were .hs__tile / .hs__label, which no element has ever carried — the
+   markup builds .hs__glyph and .hs__name. The rules were inert, which is why
+   the glyphs stayed at their full desktop size on a phone. */
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph {
+  width: clamp(46px, 13.5vw, 64px);
+  height: clamp(46px, 13.5vw, 64px);
+  border-radius: 11px;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph::before {
+  inset: 3px;
+  border-radius: 8px;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph svg {
+  width: 62%;
+  height: 62%;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__name {
+  font-size: clamp(9.5px, 2.9vw, 12px);
+  letter-spacing: 0.1em;
+}
+
+html[data-layout='grid'] #hotspots:not(.is-rail) .hs__in {
+  gap: 5px;
+}
+
+/* ------------------------------------------------------- narrow headers -----
+   Three languages make the switch 95 px wide. A centred 146 px mark then
+   cannot share the line with it below ~460 px: at 320 px the two overlapped by
+   13 px. The mark moves to the left edge instead of shrinking, so it keeps its
+   weight and the switch keeps its corner. The hero anchor is centred
+   independently, so the entrance flight is unaffected. */
+@media (max-width: 460px) {
+  #topbar {
+    justify-content: flex-start;
+  }
+}
+
+/* ------------------------------------------------------ limited height ------
+   The key figures and the footer are sized for a desktop window. On a small
+   phone they were taking 356 px of a 568 px screen — 63 % — which left the
+   stage 106 px and pushed the marker grid up into the mark.
+
+   This tier keeps every element and every figure; it only takes back the air
+   that a tall window can afford and a short one cannot. */
+@media (max-height: 780px) {
+  #kpi {
+    gap: clamp(8px, 1.6vh, 16px);
+    padding: 0 var(--pad-x) clamp(14px, 3vh, 34px);
   }
 
-  #hotspots::before {
-    content: '';
-    position: absolute;
-    inset: -60px 0 0;
-    background: linear-gradient(to top, var(--bg-void) 42%, transparent);
-    z-index: -1;
+  #kpi-heading {
+    font-size: 10px;
+    letter-spacing: 0.24em;
   }
 
-  .hs {
-    position: static;
-    width: auto;
-    margin: 0;
-    transform: none;
+  #kpi-list {
+    row-gap: clamp(4px, 1vh, 9px);
   }
 
-  .hs__tile {
-    width: 56px;
-    height: 56px;
-    border-radius: 13px;
+  .kpi {
+    padding: 0 clamp(8px, 2vw, 22px);
   }
 
-  .hs__tile svg {
-    width: 26px;
-    height: 26px;
+  .kpi__label {
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    line-height: 1.3;
   }
 
-  .hs__label {
-    font-size: 9px;
-    letter-spacing: 0.08em;
+  .kpi__value {
+    font-size: clamp(13px, 3.4vh, 20px);
+  }
+
+  .kpi__rule {
+    width: 40px;
   }
 
   #footer {
+    gap: 5px;
+  }
+
+  #footer-partner {
+    gap: 6px;
+    margin-bottom: clamp(8px, 2vh, 18px);
+  }
+
+  .seyband {
+    font-size: 14px;
+  }
+}
+
+/* --------------------------------------------------------- short viewports ---
+   A phone in landscape has the width of a tablet and the height of nothing.
+   At 844x390 the key figures and the footer were taking 284 px of a 390 px
+   window — 73 % — which squeezed the stage to zero height and pushed the
+   markers up out of it into the mark. The bottom chrome has to yield here, so
+   it is compacted rather than merely scaled: the band keeps all three figures
+   and the endorsement, at the size the room allows. */
+@media (max-height: 560px) {
+  /* The detail column and the icon rail were sharing the same 39 px of a
+     390 px window. The column starts higher and its type tightens; the rail
+     already clears the footer via --footer-h. */
+  #detail {
+    top: 9%;
+    gap: 7px;
+  }
+
+  #detail-title {
+    font-size: clamp(19px, 4.6vh, 30px);
+    line-height: 1.04;
+  }
+
+  #detail-body {
+    font-size: clamp(10.5px, 2.7vh, 12.5px);
+    line-height: 1.5;
+    max-width: 66ch;
+  }
+
+  #detail-eyebrow {
+    font-size: 8.5px;
+  }
+
+  /* 44 px floor: below that the rail stops being reliably tappable, and the
+     rail is the only way back to the other divisions at this height. */
+  #hotspots.is-rail .hs__glyph {
+    width: clamp(44px, 9vh, 52px);
+    height: clamp(44px, 9vh, 52px);
+  }
+
+  #hotspots.is-rail .hs__glyph svg {
+    width: 62%;
+    height: 62%;
+  }
+
+  #kpi {
+    gap: clamp(4px, 1.2vh, 9px);
+    padding: 0 var(--pad-x) clamp(4px, 1.4vh, 10px);
+  }
+
+  #kpi-heading {
+    font-size: 8.5px;
+    letter-spacing: 0.2em;
+  }
+
+  #kpi-list {
+    row-gap: clamp(2px, 0.8vh, 6px);
+  }
+
+  .kpi {
+    padding: 0 clamp(6px, 1.6vw, 18px);
+  }
+
+  .kpi__label {
+    font-size: 8.5px;
+    letter-spacing: 0.08em;
+    line-height: 1.25;
+  }
+
+  .kpi__value {
+    font-size: clamp(12px, 2.6vh, 17px);
+  }
+
+  .kpi__rule {
+    width: 30px;
+  }
+
+  #footer {
+    gap: 3px;
+    padding: 0 var(--pad-x) clamp(4px, 1.2vh, 10px);
+  }
+
+  #footer-partner {
+    gap: 4px;
+    margin-bottom: clamp(4px, 1.4vh, 12px);
+  }
+
+  #footer-partner-label {
+    font-size: 8px;
+  }
+
+  .seyband {
+    font-size: 12px;
+  }
+
+  /* The mark's header slot is sized for a tall window: at 320 px it was 106 px
+     of chrome, a third of the screen, which pushed the division column down
+     into the icon rail. It keeps its position and its job, at the size this
+     window can spare. */
+  #anchor-header {
+    width: clamp(92px, 13vw, 132px);
+  }
+
+  #topbar {
+    padding-top: clamp(8px, 2.5vh, 16px);
+  }
+
+  /* The pings are a 300 px circle around a mark that is now a fraction of the
+     window; at this height they read as a full-screen flash. */
+  .ping {
+    display: none;
+  }
+
+  html[data-layout='grid'] #hotspots:not(.is-rail) {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0 6px;
+  }
+
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph {
+    width: clamp(38px, 8vh, 50px);
+    height: clamp(38px, 8vh, 50px);
+  }
+
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__name {
+    font-size: clamp(8.5px, 2.2vh, 10px);
+    letter-spacing: 0.06em;
+  }
+}
+
+/* ------------------------------------------------------- extreme landscape ---
+   A 320 px-tall window (a small phone turned sideways) cannot show a heading,
+   a paragraph and the rail stacked at any type size that is still readable.
+   The column is capped and its body scrolls inside itself: every word stays
+   reachable instead of being pushed under the icons. */
+@media (max-height: 420px) {
+  #detail {
+    top: 6%;
+    gap: 5px;
+  }
+
+  #detail-title {
+    font-size: clamp(16px, 5.4vh, 22px);
+  }
+
+  #detail-body {
+    font-size: 10.5px;
+    line-height: 1.45;
+    max-height: 38vh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.22) transparent;
+  }
+
+  #detail-body::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  #detail-body::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22);
+    border-radius: 2px;
+  }
+}
+
+/* --------------------------------------------------------- narrow columns ---
+   At 320 px the three figure columns are ~93 px wide and an eleven-character
+   number set at the 15 px floor is ~105 px: the first figure was running off
+   the left edge of the screen. The floor comes down so the number fits the
+   column it belongs to. */
+@media (max-width: 420px) {
+  .kpi__value {
+    font-size: clamp(11px, 3.4vw, 15px);
+  }
+
+  .kpi {
+    padding: 0 clamp(4px, 1.4vw, 10px);
+  }
+
+  .kpi__label {
     font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+
+  .kpi__rule {
+    width: 32px;
+  }
+}
+
+/* The marker grid is the tallest block on a small phone, and every pixel it
+   gives back goes to the globe above it. */
+@media (max-width: 360px) {
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__glyph {
+    width: 42px;
+    height: 42px;
+  }
+
+  html[data-layout='grid'] #hotspots:not(.is-rail) .hs__name {
+    font-size: 9px;
+    letter-spacing: 0.06em;
   }
 }
 
@@ -1095,10 +1399,21 @@ html[data-stage='detail'] #footer-partner {
      the tracked caption's trailing space. */
   margin-right: -0.3em;
   cursor: pointer;
+  position: relative;
   animation: kpi-twinkle 3.4s var(--ease-out) infinite;
   transition:
     color 0.35s var(--ease-out),
     text-shadow 0.35s var(--ease-out);
+}
+
+/* The digit is 8x11 px on a phone, which is a target no thumb can find. The
+   hit area is grown with an absolutely positioned pseudo-element rather than
+   padding, so the caption's tracking and line box are untouched — the mark
+   still sits exactly where it was drawn. */
+.kpi-sig::after {
+  content: '';
+  position: absolute;
+  inset: -14px -10px;
 }
 
 /* Two flashes close together, then a long dark rest. An even pulse reads as a

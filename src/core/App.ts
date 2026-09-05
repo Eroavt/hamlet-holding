@@ -65,7 +65,10 @@ export class App {
   private lang: Lang = 'en';
   private copy!: Dictionary;
 
+  /** Note: this is the language switch, not the #topbar element. */
   private topbar = document.getElementById('lang')!;
+  /** The actual header band, whose height the globe has to clear. */
+  private headerEl = document.getElementById('topbar')!;
   private footer = document.getElementById('footer')!;
   private footerLegal = document.getElementById('footer-legal')!;
   private partnerLabel = document.getElementById('footer-partner-label')!;
@@ -193,18 +196,43 @@ export class App {
    * sit above it. The block wraps differently by language and viewport, so a
    * hard-coded offset collides with the partner endorsement on one of them.
    */
+  /**
+   * Mirrors the camera's solved layout onto the document so CSS can lay the
+   * markers out the same way the globe was sized. Both sides then agree by
+   * construction instead of by a breakpoint that has to be kept in sync.
+   */
+  private publishLayout(): void {
+    const de = document.documentElement;
+    if (de.dataset.layout !== this.camera.layout) de.dataset.layout = this.camera.layout;
+    de.style.setProperty('--dist-scale', String(this.camera.ringScale));
+  }
+
   private syncFooterHeight(): void {
     const h = Math.round(this.footer.getBoundingClientRect().height);
     if (h > 0) document.documentElement.style.setProperty('--footer-h', `${h}px`);
 
     // The globe has to be sized and centred against the space left above the
     // bottom chrome, or the lower marker ring lands on top of it.
-    const reserve = h + Math.round(this.kpis.el.getBoundingClientRect().height);
-    if (reserve !== this.camera.bottomReserve) {
+    // Reserve and layout are mutually dependent: the layout decides whether the
+    // markers take height below the globe, and that height feeds back into the
+    // fit that chose the layout. Measuring once picked the markers up as zero
+    // and left the globe overhanging them by 23 px. Settle it instead — two
+    // passes is always enough, and the loop stops the moment nothing moves.
+    for (let pass = 0; pass < 3; pass++) {
+      this.publishLayout();
+      this.camera.headerReserve = Math.round(this.headerEl.getBoundingClientRect().height);
+      const reserve = h + Math.round(this.kpis.el.getBoundingClientRect().height);
+      const markers =
+        this.camera.layout === 'grid' && !this.hotspots.el.classList.contains('is-rail')
+          ? Math.round(this.hotspots.el.getBoundingClientRect().height)
+          : 0;
+      if (reserve === this.camera.bottomReserve && markers === this.camera.markerReserve) break;
       this.camera.bottomReserve = reserve;
+      this.camera.markerReserve = markers;
       this.camera.fit(this.viewport.width, this.viewport.height);
       this.lastRadius = this.lastCx = this.lastCy = -1;
     }
+    this.publishLayout();
   }
 
   /**
@@ -635,6 +663,7 @@ export class App {
     this.viewport.on('resize', ({ width, height, dpr }) => {
       this.renderer.resize(width, height, dpr);
       this.camera.fit(width, height);
+      this.publishLayout();
       this.post.resize(width, height, dpr);
       this.world.resize(width, height, dpr, this.camera.cam.fov, width / Math.max(height, 1));
       this.logo.measure();
