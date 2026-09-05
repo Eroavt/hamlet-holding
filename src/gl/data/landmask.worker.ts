@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 import { rasterizeLand, isLand, latLonToVec3 } from './rasterizeLand';
-import { urbanisation } from './urbanField';
+import { buildMetroField, urbanisationAt } from './urbanField';
 
 export interface BuildRequest {
   count: number;
@@ -64,6 +64,24 @@ const lattice = (() => {
   return g;
 })();
 
+/*
+ * P is a power of two, so the wrap is a mask rather than a pair of modulos:
+ * `((i % 16) + 16) % 16` and `i & 15` agree exactly, negatives included. This
+ * is the innermost operation of the whole build — the halo alone can ask for
+ * it fifty million times — so the two saved modulos per axis are most of the
+ * worker's cost. Both helpers are hoisted out for the same reason: they were
+ * being allocated afresh on every one of those calls.
+ */
+const MASK = P - 1;
+
+function at(ix: number, iy: number, iz: number): number {
+  return lattice[((iz & MASK) << 8) | ((iy & MASK) << 4) | (ix & MASK)];
+}
+
+function lp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
 function vnoise(x: number, y: number, z: number): number {
   const fx = Math.floor(x);
   const fy = Math.floor(y);
@@ -74,9 +92,6 @@ function vnoise(x: number, y: number, z: number): number {
   const sx = tx * tx * (3 - 2 * tx);
   const sy = ty * ty * (3 - 2 * ty);
   const sz = tz * tz * (3 - 2 * tz);
-  const at = (ix: number, iy: number, iz: number): number =>
-    lattice[((((iz % P) + P) % P) * P + (((iy % P) + P) % P)) * P + (((ix % P) + P) % P)];
-  const lp = (a: number, b: number, t: number): number => a + (b - a) * t;
   const c00 = lp(at(fx, fy, fz), at(fx + 1, fy, fz), sx);
   const c10 = lp(at(fx, fy + 1, fz), at(fx + 1, fy + 1, fz), sx);
   const c01 = lp(at(fx, fy, fz + 1), at(fx + 1, fy, fz + 1), sx);
@@ -102,7 +117,7 @@ function density(x: number, y: number, z: number): number {
 function placeBuildings(
   n: number,
   grid: ReturnType<typeof rasterizeLand>,
-  anchors: BuildRequest['anchors'],
+  metro: Float32Array,
 ): { bPos: Float32Array; bMeta: Float32Array } {
   const bPos = new Float32Array(n * 3);
   const bMeta = new Float32Array(n * 4);
@@ -117,7 +132,7 @@ function placeBuildings(
       lat = (Math.asin(Math.random() * 2 - 1) * 180) / Math.PI;
       lon = Math.random() * 360 - 180;
       if (Math.abs(lat) > 74 || !isLand(grid, lon, lat)) continue;
-      u = urbanisation(lon, lat, anchors);
+      u = urbanisationAt(metro, lon, lat);
       if (u > Math.random() * 0.55) break;
     }
 
@@ -150,7 +165,7 @@ function placeBuildings(
 function placeCityLights(
   n: number,
   grid: ReturnType<typeof rasterizeLand>,
-  anchors: BuildRequest['anchors'],
+  metro: Float32Array,
 ): { cPos: Float32Array; cMeta: Float32Array } {
   const cPos = new Float32Array(n * 3);
   const cMeta = new Float32Array(n * 2);
@@ -165,7 +180,7 @@ function placeCityLights(
       lat = (Math.asin(Math.random() * 2 - 1) * 180) / Math.PI;
       lon = Math.random() * 360 - 180;
       if (Math.abs(lat) > 76 || !isLand(grid, lon, lat)) continue;
-      u = urbanisation(lon, lat, anchors);
+      u = urbanisationAt(metro, lon, lat);
       // Squaring the acceptance concentrates the sample into real cities.
       if (u * u > Math.random() * 0.32) break;
     }
@@ -314,8 +329,9 @@ self.onmessage = (e: MessageEvent<BuildRequest>) => {
     land[k] = l;
   }
 
-  const { bPos, bMeta } = placeBuildings(buildings, grid, anchors);
-  const { cPos, cMeta } = placeCityLights(cityLights, grid, anchors);
+  const metro = buildMetroField(anchors);
+  const { bPos, bMeta } = placeBuildings(buildings, grid, metro);
+  const { cPos, cMeta } = placeCityLights(cityLights, grid, metro);
 
   const result: BuildResult = {
     positions,

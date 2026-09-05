@@ -81,6 +81,9 @@ export class App {
   private lastCx = -1;
   private lastCy = -1;
   private reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  /** Resolves once the globe's matter is in the scene. */
+  private matter: Promise<void> = Promise.resolve();
+  private matterFailed = false;
 
   async start(): Promise<void> {
     const canvas = document.getElementById('gl') as HTMLCanvasElement;
@@ -107,11 +110,19 @@ export class App {
     this.world = new World(this.renderer, this.camera, this.quality.settings);
 
     try {
-      await this.world.load(() => {});
+      await this.world.loadBackdrop();
     } catch (err) {
       console.error(err);
       return this.fail();
     }
+
+    // The globe builds behind the intro rather than in front of it. Nothing it
+    // produces is on screen until the click, so holding the loading bar for it
+    // was six seconds of black for a sky that was ready almost immediately.
+    this.matter = this.world.loadMatter().catch((err) => {
+      console.error(err);
+      this.matterFailed = true;
+    });
 
     this.world.resize(
       this.viewport.width,
@@ -130,7 +141,7 @@ export class App {
     if (legal) this.legal.open(legal, true);
 
     const deepLink = this.router.read();
-    if (deepLink && divisionBySlug(deepLink)) this.coldStartAtDivision(divisionBySlug(deepLink)!);
+    if (deepLink && divisionBySlug(deepLink)) void this.coldStartAtDivision(divisionBySlug(deepLink)!);
     else this.openUniverse();
 
     if (import.meta.env.DEV) {
@@ -263,10 +274,14 @@ export class App {
     this.stage.reset('universe');
     this.refreshLogoLabel();
 
-    gsap.set(this.world.morph, { progress: 0 });
-    gsap.set(this.world.shell, { reveal: 0 });
-    gsap.set(this.world.buildings, { reveal: 0 });
-    gsap.set(this.world.cityLights, { opacity: 0 });
+    // Their resting values are already zero on construction; this only matters
+    // when returning to the universe later, once the matter exists.
+    if (this.world.matterReady) {
+      gsap.set(this.world.morph, { progress: 0 });
+      gsap.set(this.world.shell, { reveal: 0 });
+      gsap.set(this.world.buildings, { reveal: 0 });
+      gsap.set(this.world.cityLights, { opacity: 0 });
+    }
 
     const tl = gsap.timeline();
     tl.to(this.world.starfield, { opacity: 1, duration: 1.6, ease: 'power2.out' }, 0);
@@ -274,13 +289,16 @@ export class App {
     // field so the first thing seen is stillness, not motion.
     tl.to(this.world.meteors, { opacity: 1, duration: 2.2, ease: 'power2.out' }, 0.9);
     tl.to(this.world.nebula, { intensity: 0.5, duration: 2.0, ease: 'power2.out' }, 0);
-    tl.add(() => this.dismissBoot(), 0.15);
+    tl.add(() => this.dismissBoot(), 0);
     tl.add(() => this.logo.awaken(), 0.7);
   }
 
   private dismissBoot(): void {
     this.bootEl.classList.add('is-done');
-    setTimeout(() => this.bootEl.remove(), 800);
+    // The node stays until the globe is built. If a click beats the build the
+    // bar goes back up rather than the screen simply pausing — and once the
+    // matter is in, there is nothing left that could need it.
+    void this.matter.then(() => setTimeout(() => this.bootEl.remove(), 400));
   }
 
   private onLogo(): void {
@@ -293,11 +311,20 @@ export class App {
    * camera, bloom, the mark's flight, the wireframe — hangs off the same
    * clock, which is why the phases stay locked together on any frame rate.
    */
-  private enter(): void {
+  private async enter(): Promise<void> {
     if (!this.stage.go('collapse')) return;
     this.stage.busy = true;
     this.logo.settle();
     this.logo.el.style.pointerEvents = 'none';
+
+    // Normally already resolved — the build finishes long before anyone reads
+    // the mark and clicks it. This only bites on a cold cache on slow hardware.
+    if (!this.world.matterReady) {
+      this.bootEl?.classList.remove('is-done');
+      await this.matter;
+      this.dismissBoot();
+    }
+    if (this.matterFailed) return this.fail();
 
     if (this.reduced) return this.enterInstantly();
 
@@ -386,7 +413,11 @@ export class App {
   }
 
   /** A shared link should honour the link, not force the ritual again. */
-  private coldStartAtDivision(d: Division): void {
+  private async coldStartAtDivision(d: Division): Promise<void> {
+    // A shared link lands straight on the globe, so unlike the intro it does
+    // have to wait for it.
+    await this.matter;
+    if (this.matterFailed) return this.fail();
     this.stage.reset('select');
     gsap.set(this.world.morph, { progress: 1 });
     gsap.set(this.world.shell, { reveal: 1 });

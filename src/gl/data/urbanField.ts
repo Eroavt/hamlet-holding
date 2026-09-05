@@ -71,17 +71,6 @@ const METROS: readonly (readonly [number, number, number])[] = [
 
 const DEG = Math.PI / 180;
 
-/** Great-circle distance in radians. */
-function arc(lon1: number, lat1: number, lon2: number, lat2: number): number {
-  const p1 = lat1 * DEG;
-  const p2 = lat2 * DEG;
-  const dp = (lat2 - lat1) * DEG;
-  const dl = (lon2 - lon1) * DEG;
-  const a =
-    Math.sin(dp / 2) * Math.sin(dp / 2) +
-    Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) * Math.sin(dl / 2);
-  return 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 /** Cheap deterministic hash noise on the sphere, two octaves. */
 function rough(lon: number, lat: number): number {
@@ -98,30 +87,151 @@ function rough(lon: number, lat: number): number {
  * `extra` lets the caller fold in the company's own locations so the six
  * division anchors always sit on visible cities.
  */
+/**
+ * The attractor term alone: ~50 metros, each costing an arc plus two pow/exp.
+ *
+ * The list is flattened into one packed array first. Destructuring
+ * `for (const [lon, lat, weight] of list)` allocates an iterator and a fresh
+ * array per metro per call, which at fifty metros times thirty thousand cells
+ * is a million and a half short-lived objects.
+ */
+function flatten(
+  extra: readonly (readonly [number, number, number])[],
+): Float64Array {
+  const all = [...METROS, ...extra];
+  // [ux, uy, uz, weight] per metro. Storing the unit vector turns the
+  // great-circle distance into a dot product and one acos, instead of the
+  // haversine's two sines, two cosines, a sqrt and an atan2.
+  const f = new Float64Array(all.length * 4);
+  for (let i = 0; i < all.length; i++) {
+    const lon = all[i][0] * DEG;
+    const lat = all[i][1] * DEG;
+    const c = Math.cos(lat);
+    f[i * 4] = c * Math.cos(lon);
+    f[i * 4 + 1] = Math.sin(lat);
+    f[i * 4 + 2] = c * Math.sin(lon);
+    f[i * 4 + 3] = all[i][2];
+  }
+  return f;
+}
+
+/** Past this arc the strongest possible contribution is under 0.002. */
+const FAR_DOT = Math.cos(1.15);
+
+function metroTermFlat(
+  ux: number,
+  uy: number,
+  uz: number,
+  flat: Float64Array,
+): number {
+  let best = 0;
+  for (let i = 0; i < flat.length; i += 4) {
+    const dot = ux * flat[i] + uy * flat[i + 1] + uz * flat[i + 2];
+    // Most metros are nowhere near any given cell; rejecting them on the dot
+    // alone skips the acos and both pow/exp pairs.
+    if (dot < FAR_DOT) continue;
+    const d = Math.acos(dot > 1 ? 1 : dot < -1 ? -1 : dot);
+    // ~500 km core, with a wide conurbation halo. The halo matters more than
+    // it looks: without it only a dozen megacities register at globe scale
+    // and the continents read as empty.
+    const near = Math.exp(-Math.pow(d / 0.085, 1.6));
+    const halo = Math.exp(-Math.pow(d / 0.33, 1.35)) * 0.42;
+    const v = flat[i + 3] * (near > halo ? near : halo);
+    if (v > best) best = v;
+  }
+  return best;
+}
+
+function unit(lonDeg: number, latDeg: number, out: Float64Array): void {
+  const lon = lonDeg * DEG;
+  const lat = latDeg * DEG;
+  const c = Math.cos(lat);
+  out[0] = c * Math.cos(lon);
+  out[1] = Math.sin(lat);
+  out[2] = c * Math.sin(lon);
+}
+
+const scratchUnit = new Float64Array(3);
+
+function metroTerm(
+  lonDeg: number,
+  latDeg: number,
+  extra: readonly (readonly [number, number, number])[],
+): number {
+  unit(lonDeg, latDeg, scratchUnit);
+  return metroTermFlat(scratchUnit[0], scratchUnit[1], scratchUnit[2], flatten(extra));
+}
+
+/** Everything that is cheap: the roughness and the polar falloff. */
+function finish(lonDeg: number, latDeg: number, best: number): number {
+  // Sparse settlement everywhere habitable, so continents are not empty
+  // between the metros — but thin, and thinner towards the poles.
+  const polar = Math.max(0, 1 - Math.pow(Math.abs(latDeg) / 72, 2.4));
+  const scatter = Math.pow(rough(lonDeg, latDeg), 1.7) * 0.42 * polar;
+  return Math.min(1, best * (0.75 + rough(lonDeg * 3.1, latDeg * 3.1) * 0.5) + scatter);
+}
+
+/**
+ * Urbanisation at a point, 0..1.
+ *
+ * `extra` lets the caller fold in the company's own locations so the division
+ * anchors always sit on visible cities.
+ */
 export function urbanisation(
   lonDeg: number,
   latDeg: number,
   extra: readonly (readonly [number, number, number])[] = [],
 ): number {
-  let best = 0;
+  return finish(lonDeg, latDeg, metroTerm(lonDeg, latDeg, extra));
+}
 
-  for (const list of [METROS, extra]) {
-    for (const [lon, lat, weight] of list) {
-      const d = arc(lonDeg, latDeg, lon, lat);
-      // ~500 km core, with a wide conurbation halo. The halo matters more than
-      // it looks: without it only a dozen megacities register at globe scale
-      // and the continents read as empty.
-      const near = Math.exp(-Math.pow(d / 0.085, 1.6));
-      const halo = Math.exp(-Math.pow(d / 0.33, 1.35)) * 0.42;
-      const v = weight * Math.max(near, halo);
-      if (v > best) best = v;
+/*
+ * The attractor term, precomputed.
+ *
+ * Placing the towers and the city lights asks for urbanisation over a million
+ * times, and each call walked fifty metros doing an arc plus two pow/exp — a
+ * quarter of a billion transcendentals, and 5.2 of the 5.4 seconds the build
+ * took. The attractors are wide, smooth exponentials (a 500 km core is ~5° of
+ * arc), so sampling them on a 256x128 grid and interpolating loses nothing
+ * visible. The roughness is *not* baked in: it carries the high-frequency
+ * detail and stays exact per point, where it is cheap anyway.
+ */
+export const METRO_W = 256;
+export const METRO_H = 128;
+
+export function buildMetroField(
+  extra: readonly (readonly [number, number, number])[] = [],
+): Float32Array {
+  const f = new Float32Array(METRO_W * METRO_H);
+  const flat = flatten(extra);
+  const u = new Float64Array(3);
+  for (let y = 0; y < METRO_H; y++) {
+    const lat = 90 - ((y + 0.5) * 180) / METRO_H;
+    for (let x = 0; x < METRO_W; x++) {
+      const lon = ((x + 0.5) * 360) / METRO_W - 180;
+      unit(lon, lat, u);
+      f[y * METRO_W + x] = metroTermFlat(u[0], u[1], u[2], flat);
     }
   }
+  return f;
+}
 
-  // Sparse settlement everywhere habitable, so continents are not empty
-  // between the metros — but thin, and thinner towards the poles.
-  const polar = Math.max(0, 1 - Math.pow(Math.abs(latDeg) / 72, 2.4));
-  const scatter = Math.pow(rough(lonDeg, latDeg), 1.7) * 0.42 * polar;
-
-  return Math.min(1, best * (0.75 + rough(lonDeg * 3.1, latDeg * 3.1) * 0.5) + scatter);
+/** Same result as urbanisation(), with the attractor term read off the field. */
+export function urbanisationAt(field: Float32Array, lonDeg: number, latDeg: number): number {
+  // Bilinear, wrapping in longitude and clamping in latitude.
+  const fx = ((lonDeg + 180) / 360) * METRO_W - 0.5;
+  const fy = ((90 - latDeg) / 180) * METRO_H - 0.5;
+  const x0 = Math.floor(fx);
+  const y0 = Math.floor(fy);
+  const tx = fx - x0;
+  const ty = fy - y0;
+  const wrap = (x: number): number => ((x % METRO_W) + METRO_W) % METRO_W;
+  const clampY = (y: number): number => (y < 0 ? 0 : y > METRO_H - 1 ? METRO_H - 1 : y);
+  const xa = wrap(x0);
+  const xb = wrap(x0 + 1);
+  const ya = clampY(y0) * METRO_W;
+  const yb = clampY(y0 + 1) * METRO_W;
+  const top = field[ya + xa] + (field[ya + xb] - field[ya + xa]) * tx;
+  const bot = field[yb + xa] + (field[yb + xb] - field[yb + xa]) * tx;
+  return finish(lonDeg, latDeg, top + (bot - top) * ty);
 }

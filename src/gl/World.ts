@@ -92,8 +92,23 @@ export class World {
    * of the collapse pays for shader compilation — a 150–300 ms freeze at
    * precisely the moment the user clicked.
    */
-  async load(onProgress: (v: number) => void): Promise<void> {
-    onProgress(0.08);
+  /**
+   * True once the globe's matter exists. Until then only the backdrop is in
+   * the scene, and update() has nothing else to drive.
+   */
+  matterReady = false;
+
+  /**
+   * The backdrop: stars, nebula, meteors, the void. Everything the intro
+   * actually puts on screen.
+   *
+   * It is separated from the globe because the globe is not visible during the
+   * intro at all — every morph particle sits at radius zero until the click.
+   * Waiting for it meant holding the loading bar for the whole build, which was
+   * six seconds of staring at a black screen for a scene that was ready in a
+   * fraction of that.
+   */
+  async loadBackdrop(): Promise<void> {
 
     this.nebula = new Nebula();
     this.camera.cam.add(this.nebula.mesh);
@@ -111,10 +126,16 @@ export class World {
     this.void_ = new Void();
     this.renderer.scene.add(this.void_.mesh);
     this.renderer.scene.add(this.root);
-    onProgress(0.22);
 
+    await this.renderer.gl.compileAsync(this.renderer.scene, this.camera.cam);
+  }
+
+  /**
+   * The globe itself. Runs behind the intro; enter() waits on it, and by the
+   * time anyone has read the mark and clicked it has long since finished.
+   */
+  async loadMatter(): Promise<void> {
     const data = await this.sample();
-    onProgress(0.58);
 
     this.morph = new Morph(this.curl);
     // Baked at boot with everything else. It costs one canvas rasterisation
@@ -134,7 +155,6 @@ export class World {
     this.cityLights = new CityLights(this.buildings.sun);
     this.cityLights.setData(data);
     this.root.add(this.cityLights.points);
-    onProgress(0.76);
 
     const graph = buildIcoGraph(this.quality.meshDetail, {
       data: data.grid,
@@ -149,12 +169,11 @@ export class World {
       this.shell.orbits,
       this.shell.atmosphere,
     );
-    onProgress(0.88);
 
     this.setDpr(this.renderer.gl.getPixelRatio());
     this.fitWord(this.camera.cam.fov, this.camera.cam.aspect);
     await this.renderer.gl.compileAsync(this.renderer.scene, this.camera.cam);
-    onProgress(1);
+    this.matterReady = true;
   }
 
   private sample(): Promise<BuildResult> {
@@ -190,6 +209,7 @@ export class World {
 
   setDpr(dpr: number): void {
     this.starfield.dpr = dpr;
+    if (!this.matterReady) return;
     this.morph.dpr = dpr;
     this.cityLights.dpr = dpr;
   }
@@ -217,8 +237,12 @@ export class World {
   private fitWord(fov: number, aspect: number): void {
     const halfH = this.camera.distance * Math.tan((fov * Math.PI) / 360);
     const scale = halfH * aspect;
-    this.morph.wordScale = scale;
-    this.morph.wordY = this.camera.lookY;
+    // The void tracks the frame from the first resize; the word lives on the
+    // morph buffer, which does not exist until the matter has loaded.
+    if (this.matterReady) {
+      this.morph.wordScale = scale;
+      this.morph.wordY = this.camera.lookY;
+    }
     // Has to track the shader's VOID_R exactly, or the black disc either
     // leaves a rim of sky showing or eats the bright inner edge of the vortex.
     this.void_.radius = scale * VOID_R;
@@ -281,6 +305,12 @@ export class World {
   update(dt: number, elapsed: number): void {
     this.spin += dt * this.spinSpeed;
     const total = this.spin + this.aim;
+
+    this.starfield.update(dt, elapsed);
+    this.meteors.update(dt, elapsed);
+    this.nebula.update(dt, elapsed);
+    if (!this.matterReady) return;
+
     this.morph.spin = total;
     this.shell.spin = total;
     this.buildings.spin = total;
@@ -293,9 +323,6 @@ export class World {
       this.morph.setFocus(this.focusRotated);
     }
 
-    this.starfield.update(dt, elapsed);
-    this.meteors.update(dt, elapsed);
-    this.nebula.update(dt, elapsed);
     this.morph.update(dt, elapsed);
     this.shell.update(dt);
   }
