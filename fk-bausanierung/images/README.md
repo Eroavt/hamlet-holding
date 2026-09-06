@@ -10,8 +10,12 @@ Datei mit demselben Namen an dieselbe Stelle — im Code ist nichts zu ändern.
 | Platz auf der Seite            | Datei                                  | Originalfoto |
 |--------------------------------|----------------------------------------|--------------|
 | Eröffnung, Porträt rechts      | `hero/inhaber.jpg`                     | inhaber-fidain-kastrati-zertifikat |
-| Banner über der Galerie        | `hero/showcase.jpg`                    | firmenwagen-fk-beschriftet |
-| Logo (Kopf + Fußzeile)         | `logo/fk-logo.png`                     | logo-fk-bausanierung-kastrati, freigestellt: weißer Hintergrund entfernt, Wortmarke hell, „FK"/„KASTRATI" im helleren Firmenblau |
+| Karussell — Bad Marmoroptik    | `projekte/bad-marmoroptik-walkin.jpg`  | bad-marmoroptik-walk-in-dusche |
+| Karussell — Zimmer Lichtvoute  | `projekte/zimmer-laminat-lichtvoute.jpg` | zimmer-laminat-mit-lichtvoute |
+| Karussell — Ladenbau           | `projekte/ladenbau-oichi.jpg`          | **fehlt noch** — Ladenlokal mit beleuchteter Schrift |
+| Karussell — Gartenpflege       | `projekte/gartenpflege.jpg`            | **fehlt noch** — Garten mit Rasenmäher und Rosenbogen |
+| Fußzeile — Foto neben Kontakt  | `footer/handwerker.jpg`                | **fehlt noch** — Mitarbeiter mit Akkuschrauber an der Holzterrasse |
+| Logo (Kopf + Fußzeile), weiß   | `logo/fk-logo.png`                     | logo-fk-bausanierung-kastrati, freigestellt: weißer Hintergrund entfernt, Wortmarke hell, „FK"/„KASTRATI" im helleren Firmenblau |
 | Leistung — Bodenverlegung      | `leistungen/bodenverlegung.jpg`        | zimmer-laminat-mit-lichtvoute |
 | Leistung — Trockenbau          | `leistungen/trockenbau.jpg`            | wohnzimmer-tv-wand-mit-kamin |
 | Leistung — Fliesenverlegung    | `leistungen/fliesenverlegung.jpg`      | bad-marmoroptik-walk-in-dusche |
@@ -40,3 +44,6 @@ Datei mit demselben Namen an dieselbe Stelle — im Code ist nichts zu ändern.
 - Neue Fotos vor dem Einsetzen auf ~1400 px Breite verkleinern und als JPG mit
   etwa 70–80 % Qualität speichern (Ziel: unter 300 KB je Datei).
 - **Nur eigene Fotos** oder Bilder mit Lizenz verwenden.
+
+> `hero/showcase.jpg` (Firmenwagen) wird derzeit nicht mehr angezeigt — das
+> Banner über den Projekten ist entfallen. Die Datei bleibt für später liegen.

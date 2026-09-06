@@ -11,7 +11,7 @@ kompletten Ordner auf den Webspace laden.
 | 1 | Eröffnung — „Bausanierung in Kempten und Allgäu", Google-Bewertung, Porträt des Inhabers, Vertrauensleiste | `#start` |
 | 2 | 01 Leistungen — 9 Kacheln, jede öffnet das Kontaktfenster mit vorausgewählter Leistung | `#leistungen` |
 | 3 | 02 Warum wir — 4 kurze Karten **plus die Kennzahlen** | `#warum` |
-| 4 | 03 Projekte — Karussell mit 10 Fotos | `#projekte` |
+| 4 | 03 Projekte — Karussell mit 13 Fotos, Gewerk als Plakette, Großansicht per Klick | `#projekte` |
 | 5 | Abschlussband und Fußzeile | — |
 
 **Kontakt:** steht nicht mehr in der Seite, sondern öffnet sich als Fenster —
@@ -53,8 +53,8 @@ Alle Platzhalter sind im Code mit `TODO` markiert (`grep -rn "TODO" .`):
    `application/ld+json`-Block im `<head>` (der Block ist für Google und muss
    dieselben Daten enthalten). Die Festnetznummer vom Firmenwagen
    (0831 / 57 05 37 99) steht noch nirgends.
-2. **Kennzahlen** in der Statistik — „11 Jahre Erfahrung" ist bestätigt, die
-   drei übrigen Werte (120+ Projekte, 9 Leistungen, 100 % Festpreis) noch prüfen.
+2. **Kennzahlen** in der Statistik — „12 Jahre Erfahrung" und „130+ Projekte" sind vom
+   Inhaber bestätigt; „9 Leistungen" und „100 % Festpreis" ergeben sich aus der Seite.
 3. **Impressum** — Rechtsform, USt-IdNr., zuständige Handwerkskammer.
    In Deutschland gesetzlich vorgeschrieben.
 4. **Datenschutzerklärung** — Hosting-Anbieter eintragen und den Text prüfen lassen.

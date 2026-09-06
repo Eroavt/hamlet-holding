@@ -319,8 +319,9 @@
     if (!shots.length) return;
     lbIndex = (i + shots.length) % shots.length;
     var shot = shots[lbIndex];
-    var src = shot.getAttribute('data-img');
-    lightboxImg.style.backgroundImage = shot.classList.contains('has-img') ? 'url("' + src + '")' : '';
+    var bild = shot.querySelector('[data-img]') || shot;
+    var src = bild.getAttribute('data-img');
+    lightboxImg.style.backgroundImage = bild.classList.contains('has-img') ? 'url("' + src + '")' : '';
     if (lightboxCap) lightboxCap.textContent = shot.getAttribute('data-caption') || '';
   };
 

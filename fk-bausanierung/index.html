@@ -18,7 +18,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="preload" as="image" href="images/hero/hero.jpg">
-<link rel="stylesheet" href="assets/css/styles.css?v=4">
+<link rel="stylesheet" href="assets/css/styles.css?v=10">
 
 <!-- ===================================================================
      TODO vor dem Livegang: E-Mail-Adresse und die drei ungeprüften
@@ -50,27 +50,13 @@
   "openingHoursSpecification": [{
     "@type": "OpeningHoursSpecification",
     "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday"],
-    "opens": "07:30", "closes": "17:00"
+    "opens": "07:30", "closes": "18:00"
   }]
 }
 </script>
 </head>
 <body>
 <a class="skip-link" href="#main">Zum Inhalt springen</a>
-
-<!-- ============================ KOPFLEISTE ============================ -->
-<div class="topbar">
-  <div class="topbar__inner">
-    <p class="topbar__area">
-      <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg>
-      Kempten &amp; Allgäu · Mo–Fr 07:30–17:00
-    </p>
-    <a class="topbar__phone" href="tel:+4917675054807">
-      <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg>
-      0176 / 75 05 48 07
-    </a>
-  </div>
-</div>
 
 <!-- ============================ NAVIGATION ============================ -->
 <header class="nav" id="nav">
@@ -82,9 +68,8 @@
 
     <nav class="nav__links" id="navLinks" aria-label="Hauptnavigation">
       <a href="#leistungen">Leistungen</a>
-      <a href="#warum">Warum wir</a>
+      <a href="#warum">Unternehmen</a>
       <a href="#projekte">Projekte</a>
-      <a class="btn btn--accent btn--sm" href="#kontakt">Kostenlos beraten lassen</a>
     </nav>
 
     <button class="nav__toggle" id="navToggle" aria-expanded="false" aria-controls="navLinks" aria-label="Menü öffnen">
@@ -148,18 +133,11 @@
            aria-label="Fidain Kastrati, Inhaber von FK Bausanierung Kastrati, mit seinem Zertifikat"></div>
       <figcaption>
         <strong>Fidain Kastrati</strong>
-        <span>Inhaber — zertifiziert für fugenlose Wand- &amp; Bodengestaltung</span>
+        <span>Inhaber — zertifiziert für Wand- &amp; Bodengestaltung</span>
       </figcaption>
     </figure>
   </div>
 
-  <!-- Vertrauensleiste am unteren Rand der Eröffnung -->
-  <ul class="hero__trust">
-    <li><strong>11</strong> Jahre Erfahrung</li>
-    <li><strong>9</strong> Gewerke aus einer Hand</li>
-    <li><strong>Festpreis</strong> nach Besichtigung</li>
-    <li><strong>Antwort</strong> in 24 Stunden</li>
-  </ul>
 
   <a class="hero__scroll" href="#leistungen" aria-label="Weiter zu den Leistungen"><span></span></a>
 </section>
@@ -169,10 +147,10 @@
   <div class="wrap">
     <header class="sec-head">
       <p class="eyebrow eyebrow--num"><span>01</span> Leistungen</p>
-      <h2 class="section-title">Neun Gewerke, ein Ansprechpartner.</h2>
+      <h2 class="section-title">Komplette Bausanierung — alle Gewerke aus einer Hand.</h2>
       <p class="section-lead">
         Vom Rückbau über den Ausbau bis zur laufenden Betreuung — koordiniert,
-        terminiert und abgerechnet aus einer Hand. Kachel anklicken und direkt anfragen.
+        terminiert und abgerechnet.
       </p>
     </header>
 
@@ -192,7 +170,7 @@
         <span class="tile__body">
           <span class="tile__num">02</span>
           <span class="tile__title">Trockenbau</span>
-          <span class="tile__text">Trennwände, abgehängte Decken mit Lichtvouten und Dachausbau.</span>
+          <span class="tile__text">Trennwände und abgehängte Decken mit Lichtvouten.</span>
           <span class="tile__link">Anfragen <span aria-hidden="true">→</span></span>
         </span>
       </button>
@@ -202,7 +180,7 @@
         <span class="tile__body">
           <span class="tile__num">03</span>
           <span class="tile__title">Fliesenverlegung</span>
-          <span class="tile__text">Groß- und Kleinformat, Naturstein und Mosaik, sauber verfugt.</span>
+          <span class="tile__text">Badsanierung, Naturstein und Mosaik, sauber verfugt.</span>
           <span class="tile__link">Anfragen <span aria-hidden="true">→</span></span>
         </span>
       </button>
@@ -212,7 +190,7 @@
         <span class="tile__body">
           <span class="tile__num">04</span>
           <span class="tile__title">Malerarbeiten</span>
-          <span class="tile__text">Innenanstrich, Tapezierarbeiten und Fassadengestaltung.</span>
+          <span class="tile__text">Innenanstrich und Tapezierarbeiten, sauber abgeklebt.</span>
           <span class="tile__link">Anfragen <span aria-hidden="true">→</span></span>
         </span>
       </button>
@@ -237,11 +215,11 @@
         </span>
       </button>
 
-      <button class="tile reveal" type="button" data-service="Garten- &amp; Landschaftsbau" style="--i:6">
+      <button class="tile reveal" type="button" data-service="Garten + Landschaftsbau" style="--i:6">
         <span class="tile__media" data-img="images/leistungen/garten-landschaftsbau.jpg" style="--g1:#243b57;--g2:#0d1726"></span>
         <span class="tile__body">
           <span class="tile__num">07</span>
-          <span class="tile__title">Garten- &amp; Landschaftsbau</span>
+          <span class="tile__title">Garten + Landschaftsbau</span>
           <span class="tile__text">Pflasterarbeiten, Bepflanzung, Terrassen und laufende Pflege.</span>
           <span class="tile__link">Anfragen <span aria-hidden="true">→</span></span>
         </span>
@@ -257,11 +235,11 @@
         </span>
       </button>
 
-      <button class="tile reveal" type="button" data-service="Abriss &amp; Entkernung" style="--i:8">
+      <button class="tile reveal" type="button" data-service="Abriss + Entkernung" style="--i:8">
         <span class="tile__media" data-img="images/leistungen/abriss-entkernung.jpg" style="--g1:#2a4463;--g2:#0d1726"></span>
         <span class="tile__body">
           <span class="tile__num">09</span>
-          <span class="tile__title">Abriss &amp; Entkernung</span>
+          <span class="tile__title">Abriss + Entkernung</span>
           <span class="tile__text">Rückbau und Entkernung inklusive Abtransport und Entsorgung.</span>
           <span class="tile__link">Anfragen <span aria-hidden="true">→</span></span>
         </span>
@@ -273,7 +251,7 @@
 <section class="why" id="warum">
   <div class="wrap">
     <header class="sec-head sec-head--center">
-      <p class="eyebrow eyebrow--num center"><span>02</span> Warum FK Bausanierung</p>
+      <p class="eyebrow eyebrow--num center"><span>02</span> Unternehmen</p>
       <h2 class="section-title">Was uns auszeichnet</h2>
     </header>
 
@@ -293,7 +271,7 @@
       <article class="wcard reveal" style="--i:2">
         <span class="wcard__icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 10.4V6h-2v7.4l5.2 3.1 1-1.7-4.2-2.4Z"/></svg></span>
         <h3>Termintreue</h3>
-        <p>Realistischer Zeitplan, klare Absprachen.</p>
+        <p>Realistischer Zeitplan und schnelle Umsetzung.</p>
       </article>
 
       <article class="wcard reveal" style="--i:3">
@@ -303,11 +281,25 @@
       </article>
     </div>
 
-    <!-- „11 Jahre Erfahrung" ist bestätigt.
-         TODO: die übrigen drei Kennzahlen durch echte Werte ersetzen. -->
+    <!-- Herstellergarantien -->
+    <aside class="garantie reveal">
+      <span class="garantie__icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="26" height="26"><path fill="currentColor" d="m12 1.6 2.2 1.7 2.7-.5 1 2.6 2.4 1.4-.6 2.7 1.6 2.2-1.6 2.2.6 2.7-2.4 1.4-1 2.6-2.7-.5L12 22.4l-2.2-1.7-2.7.5-1-2.6-2.4-1.4.6-2.7L2.7 11.7l1.6-2.2-.6-2.7 2.4-1.4 1-2.6 2.7.5L12 1.6Zm-1.2 14.1 5.6-5.6-1.4-1.4-4.2 4.2-2-2L7.4 12l3.4 3.7Z"/></svg>
+      </span>
+      <div>
+        <h3>Herstellergarantien</h3>
+        <p>
+          Wir verbauen Markenprodukte von Herstellern wie Grohe, Hansgrohe sowie
+          Knauf. Zusätzlich zur Gewährleistung gelten deren Herstellergarantien.
+        </p>
+      </div>
+    </aside>
+
+    <!-- „12 Jahre Erfahrung" und „130+ Projekte" sind bestätigt.
+         TODO: die übrigen zwei Kennzahlen prüfen. -->
     <div class="stats">
-      <div class="stat"><p class="stat__num" data-count="120" data-suffix="+">0</p><p class="stat__label">Projekte realisiert</p></div>
-      <div class="stat"><p class="stat__num" data-count="11">0</p><p class="stat__label">Jahre Erfahrung</p></div>
+      <div class="stat"><p class="stat__num" data-count="130" data-suffix="+">0</p><p class="stat__label">Projekte realisiert</p></div>
+      <div class="stat"><p class="stat__num" data-count="12">0</p><p class="stat__label">Jahre Erfahrung</p></div>
       <div class="stat"><p class="stat__num" data-count="9">0</p><p class="stat__label">Leistungen aus einer Hand</p></div>
       <div class="stat"><p class="stat__num" data-count="100" data-suffix="%">0</p><p class="stat__label">Festpreisgarantie</p></div>
     </div>
@@ -316,62 +308,159 @@
 
 <!-- ============================ 04 — PROJEKTE ============================ -->
 <section class="showcase" id="projekte">
-  <div class="showcase__hero">
-    <div class="showcase__media" data-img="images/hero/showcase.jpg" aria-hidden="true"></div>
-    <span class="showcase__tag">Unterwegs im Allgäu</span>
-  </div>
-
   <div class="wrap">
     <header class="sec-head sec-head--center">
       <p class="eyebrow eyebrow--num center"><span>03</span> Referenzen</p>
       <h2 class="section-title light">Unsere Projekte</h2>
       <p class="section-lead center">
         Ausgeführte Arbeiten, fotografiert auf unseren eigenen Baustellen.
-        Zum Vergrößern auf ein Bild klicken.
       </p>
     </header>
   </div>
 
   <div class="carousel">
     <div class="strip" id="strip" tabindex="0" role="group" aria-label="Projektbilder, seitlich scrollbar">
-      <button class="shot" type="button" data-img="images/projekte/bad-holzoptik.jpg" data-caption="Bad mit Holzoptik-Wand — Fliesenverlegung" style="--g1:#2a4463;--g2:#0d1726">
-        <span class="shot__cap">Bad mit Holzoptik-Wand<em>Fliesenverlegung</em></span>
+      <button class="shot" type="button" data-caption="Zimmer mit Laminat und Lichtvoute — Boden-Verlegung" aria-label="Zimmer mit Laminat und Lichtvoute — Boden &amp; Trockenbau — vergrößern">
+        <span class="shot__img" data-img="images/projekte/zimmer-laminat-lichtvoute.jpg" style="--g1:#26405e;--g2:#0d1726"></span>
+        <span class="shot__badge">Boden-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Zimmer mit Laminat und Lichtvoute</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/projekte/bad-dusche-mosaik.jpg" data-caption="Bodengleiche Dusche in Marmoroptik — Fliesen &amp; Mosaik" style="--g1:#243b57;--g2:#0d1726">
-        <span class="shot__cap">Bodengleiche Dusche in Marmoroptik<em>Fliesen &amp; Mosaik</em></span>
+      <button class="shot" type="button" data-caption="Bad mit Holzoptik-Wand — Fliesen-Verlegung" aria-label="Bad mit Holzoptik-Wand — Fliesenverlegung — vergrößern">
+        <span class="shot__img" data-img="images/projekte/bad-holzoptik.jpg" style="--g1:#2a4463;--g2:#0d1726"></span>
+        <span class="shot__badge">Fliesen-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Bad mit Holzoptik-Wand</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/projekte/wohnzimmer-laminat.jpg" data-caption="Wohnzimmer mit neuem Laminat — Boden &amp; Maler" style="--g1:#26405e;--g2:#0d1726">
-        <span class="shot__cap">Wohnzimmer mit neuem Laminat<em>Boden &amp; Maler</em></span>
+      <button class="shot" type="button" data-caption="Gartenpflege und Außenanlage — Garten + Landschaftsbau" aria-label="Gartenpflege und Außenanlage — Garten + Landschaftsbau — vergrößern">
+        <span class="shot__img" data-img="images/projekte/gartenpflege.jpg" style="--g1:#26405e;--g2:#0d1726"></span>
+        <span class="shot__badge">Garten + Landschaftsbau</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Gartenpflege und Außenanlage</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/projekte/flur-marmorfliesen.jpg" data-caption="Flur &amp; Wohnraum in Marmoroptik — Fliesenverlegung" style="--g1:#2a4463;--g2:#0d1726">
-        <span class="shot__cap">Flur &amp; Wohnraum in Marmoroptik<em>Fliesenverlegung</em></span>
+      <button class="shot" type="button" data-caption="Wohnraum mit Dielenboden — Boden-Verlegung" aria-label="Wohnraum mit Dielenboden — Bodenverlegung — vergrößern">
+        <span class="shot__img" data-img="images/galerie/2.jpg" style="--g1:#243b57;--g2:#0d1726"></span>
+        <span class="shot__badge">Boden-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Wohnraum mit Dielenboden</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/projekte/kueche-hochglanz.jpg" data-caption="Küche mit Hochglanzfronten — Fliesen &amp; Boden" style="--g1:#243b57;--g2:#0d1726">
-        <span class="shot__cap">Küche mit Hochglanzfronten<em>Fliesen &amp; Boden</em></span>
+      <button class="shot" type="button" data-caption="Holzfassade mit neuer Außenanlage — Garten + Landschaftsbau" aria-label="Holzfassade mit neuer Außenanlage — Garten + Landschaftsbau — vergrößern">
+        <span class="shot__img" data-img="images/projekte/hausfassade-holz.jpg" style="--g1:#26405e;--g2:#0d1726"></span>
+        <span class="shot__badge">Garten + Landschaftsbau</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Holzfassade mit neuer Außenanlage</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/projekte/hausfassade-holz.jpg" data-caption="Holzfassade mit neuer Außenanlage — Garten &amp; Landschaftsbau" style="--g1:#26405e;--g2:#0d1726">
-        <span class="shot__cap">Holzfassade mit neuer Außenanlage<em>Garten &amp; Landschaftsbau</em></span>
+      <button class="shot" type="button" data-caption="Bodengleiche Dusche in Marmoroptik — Fliesen-Verlegung" aria-label="Bodengleiche Dusche in Marmoroptik — Fliesen &amp; Mosaik — vergrößern">
+        <span class="shot__img" data-img="images/projekte/bad-dusche-mosaik.jpg" style="--g1:#2a4463;--g2:#0d1726"></span>
+        <span class="shot__badge">Fliesen-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Bodengleiche Dusche in Marmoroptik</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/galerie/1.jpg" data-caption="Wohnzimmer mit TV-Wand und Elektrokamin — Trockenbau" style="--g1:#2a4463;--g2:#0d1726">
-        <span class="shot__cap">Wohnzimmer mit TV-Wand<em>Trockenbau</em></span>
+      <button class="shot" type="button" data-caption="Wohnzimmer mit TV-Wand — Trockenbau" aria-label="Wohnzimmer mit TV-Wand — Trockenbau — vergrößern">
+        <span class="shot__img" data-img="images/galerie/1.jpg" style="--g1:#243b57;--g2:#0d1726"></span>
+        <span class="shot__badge">Trockenbau</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Wohnzimmer mit TV-Wand</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/galerie/2.jpg" data-caption="Wohnraum mit Dielenboden und Glaswand — Bodenverlegung" style="--g1:#243b57;--g2:#0d1726">
-        <span class="shot__cap">Wohnraum mit Dielenboden<em>Bodenverlegung</em></span>
+      <button class="shot" type="button" data-caption="Flur &amp; Wohnraum in Marmoroptik — Fliesen-Verlegung" aria-label="Flur &amp; Wohnraum in Marmoroptik — Fliesenverlegung — vergrößern">
+        <span class="shot__img" data-img="images/projekte/flur-marmorfliesen.jpg" style="--g1:#26405e;--g2:#0d1726"></span>
+        <span class="shot__badge">Fliesen-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Flur &amp; Wohnraum in Marmoroptik</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/galerie/3.jpg" data-caption="Terrasse mit Großformatplatten — Garten &amp; Landschaftsbau" style="--g1:#26405e;--g2:#0d1726">
-        <span class="shot__cap">Terrasse mit Großformatplatten<em>Garten &amp; Landschaftsbau</em></span>
+      <button class="shot" type="button" data-caption="Terrasse mit Großformatplatten — Garten + Landschaftsbau" aria-label="Terrasse mit Großformatplatten — Garten + Landschaftsbau — vergrößern">
+        <span class="shot__img" data-img="images/galerie/3.jpg" style="--g1:#2a4463;--g2:#0d1726"></span>
+        <span class="shot__badge">Garten + Landschaftsbau</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Terrasse mit Großformatplatten</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
 
-      <button class="shot" type="button" data-img="images/galerie/4.jpg" data-caption="Terrasse während der Plattenverlegung — Garten &amp; Landschaftsbau" style="--g1:#2a4463;--g2:#0d1726">
-        <span class="shot__cap">Plattenverlegung im Freien<em>Garten &amp; Landschaftsbau</em></span>
+      <button class="shot" type="button" data-caption="Bad in Marmoroptik mit Walk-in-Dusche — Fliesen-Verlegung" aria-label="Bad in Marmoroptik mit Walk-in-Dusche — Fliesenverlegung — vergrößern">
+        <span class="shot__img" data-img="images/projekte/bad-marmoroptik-walkin.jpg" style="--g1:#243b57;--g2:#0d1726"></span>
+        <span class="shot__badge">Fliesen-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Bad in Marmoroptik mit Walk-in-Dusche</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
+      </button>
+
+      <button class="shot" type="button" data-caption="Wohnzimmer mit neuem Laminat — Boden-Verlegung" aria-label="Wohnzimmer mit neuem Laminat — Boden &amp; Maler — vergrößern">
+        <span class="shot__img" data-img="images/projekte/wohnzimmer-laminat.jpg" style="--g1:#26405e;--g2:#0d1726"></span>
+        <span class="shot__badge">Boden-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Wohnzimmer mit neuem Laminat</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
+      </button>
+
+      <button class="shot" type="button" data-caption="Küche mit Hochglanzfronten — Fliesen-Verlegung" aria-label="Küche mit Hochglanzfronten — Fliesen &amp; Boden — vergrößern">
+        <span class="shot__img" data-img="images/projekte/kueche-hochglanz.jpg" style="--g1:#2a4463;--g2:#0d1726"></span>
+        <span class="shot__badge">Fliesen-Verlegung</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Küche mit Hochglanzfronten</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
+      </button>
+
+      <button class="shot" type="button" data-caption="Plattenverlegung im Freien — Garten + Landschaftsbau" aria-label="Plattenverlegung im Freien — Garten + Landschaftsbau — vergrößern">
+        <span class="shot__img" data-img="images/galerie/4.jpg" style="--g1:#243b57;--g2:#0d1726"></span>
+        <span class="shot__badge">Garten + Landschaftsbau</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Plattenverlegung im Freien</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
       </button>
     </div>
   </div>
@@ -396,7 +485,8 @@
 
 <!-- ============================ ABSCHLUSSBAND ============================ -->
 <section class="cta">
-  <div class="wrap cta__inner">
+  <div class="wrap">
+   <div class="cta__panel">
     <div>
       <p class="eyebrow eyebrow--line">Nächster Schritt</p>
       <h2>Sie planen eine Sanierung?</h2>
@@ -406,6 +496,7 @@
       <a class="btn btn--light" href="#kontakt">Kostenlos beraten lassen</a>
       <a class="btn btn--outline" href="tel:+4917675054807">0176 / 75 05 48 07</a>
     </div>
+   </div>
   </div>
 </section>
 
@@ -417,30 +508,32 @@
         <img class="brand__logo" src="images/logo/fk-logo.png" width="1032" height="244"
              alt="FK Bausanierung Kastrati">
       </a>
-      <p class="footer__text">
-        Bausanierung, Ausbau und Gebäudebetreuung in Kempten und im Allgäu.
-        Alles aus einer Hand, zum verbindlichen Festpreis.
-      </p>
-    </div>
-
-    <div>
-      <h3>Leistungen</h3>
-      <ul>
-        <li><a href="#leistungen">Bodenverlegung</a></li>
-        <li><a href="#leistungen">Trockenbau</a></li>
-        <li><a href="#leistungen">Fliesenverlegung</a></li>
-        <li><a href="#leistungen">Gebäudereinigung</a></li>
-        <li><a href="#leistungen">Winterdienst</a></li>
-      </ul>
+      <!-- TODO: Foto ablegen unter images/footer/handwerker.jpg -->
+      <figure class="footer__foto">
+        <div class="footer__foto-bild" data-img="images/footer/handwerker.jpg" role="img"
+             aria-label="Mitarbeiter der FK Bausanierung Kastrati bei der Montage einer Holzterrasse"></div>
+      </figure>
     </div>
 
     <div>
       <h3>Kontakt</h3>
-      <ul>
-        <li><a href="tel:+4917675054807">0176 / 75 05 48 07</a></li>
-        <li><a href="mailto:info@fk-bausanierung.de">info@fk-bausanierung.de</a></li>
-        <li>Webergasse 39<br>87435 Kempten (Allgäu)</li>
-        <li>Mo – Fr: 07:30 – 17:00 Uhr</li>
+      <ul class="fcontact">
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M6.6 10.8a15.5 15.5 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.2.4 2.4.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.4 0 .8-.2 1l-2.3 2.2Z"/></svg></span>
+          <a href="tel:+4917675054807">0176 / 75 05 48 07</a>
+        </li>
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M20 4H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2Zm0 4.2-8 4.8-8-4.8V6l8 4.8L20 6v2.2Z"/></svg></span>
+          <a href="mailto:info@fk-bausanierung.de">info@fk-bausanierung.de</a>
+        </li>
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z"/></svg></span>
+          <span>Webergasse 39<br>87435 Kempten (Allgäu)</span>
+        </li>
+        <li>
+          <span aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17"><path fill="currentColor" d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 10.4V6h-2v7.4l5.2 3.1 1-1.7-4.2-2.4Z"/></svg></span>
+          <span>Mo – Fr: 07:30 – 18:00 Uhr</span>
+        </li>
       </ul>
     </div>
 
@@ -449,7 +542,6 @@
       <ul>
         <li><a href="impressum.html">Impressum</a></li>
         <li><a href="datenschutz.html">Datenschutz</a></li>
-        <li><a href="#kontakt">Anfrage stellen</a></li>
       </ul>
     </div>
   </div>
@@ -521,9 +613,9 @@
               <option>Malerarbeiten</option>
               <option>Hausmeisterservice</option>
               <option>Gebäudereinigung</option>
-              <option>Garten- &amp; Landschaftsbau</option>
+              <option>Garten + Landschaftsbau</option>
               <option>Winterdienst</option>
-              <option>Abriss &amp; Entkernung</option>
+              <option>Abriss + Entkernung</option>
               <option>Sonstiges</option>
             </select>
           </div>
@@ -594,7 +686,7 @@
             </span>
             <div>
               <p class="infolist__label">Öffnungszeiten</p>
-              <p class="infolist__value">Mo – Fr: 07:30 – 17:00 Uhr<br>Sa: nach Vereinbarung</p>
+              <p class="infolist__value">Mo – Fr: 07:30 – 18:00 Uhr<br>Sa: nach Vereinbarung</p>
             </div>
           </li>
         </ul>
@@ -623,8 +715,19 @@
   <button class="lightbox__nav lightbox__nav--next" id="lightboxNext" aria-label="Nächstes Bild">
     <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path fill="currentColor" d="M8.6 7.4 10 6l6 6-6 6-1.4-1.4 4.6-4.6z"/></svg>
   </button>
+
+      <button class="shot" type="button" data-caption="Ladenlokal mit beleuchteter Fassadenschrift — Ladenbau" aria-label="Ladenlokal mit beleuchteter Fassadenschrift — Ladenbau — vergrößern">
+        <span class="shot__img" data-img="images/projekte/ladenbau-oichi.jpg" style="--g1:#243b57;--g2:#0d1726"></span>
+        <span class="shot__badge">Ladenbau</span>
+        <span class="shot__cap">
+          <span class="shot__titel">Ladenlokal mit beleuchteter Fassadenschrift</span>
+          <span class="shot__mehr" aria-hidden="true">Ansehen
+            <svg viewBox="0 0 24 24" width="15" height="15"><path fill="currentColor" d="M14 5l-1.4 1.4 4.6 4.6H4v2h13.2l-4.6 4.6L14 19l7-7z"/></svg>
+          </span>
+        </span>
+      </button>
 </div>
 
-<script src="assets/js/main.js?v=4" defer></script>
+<script src="assets/js/main.js?v=10" defer></script>
 </body>
 </html>
