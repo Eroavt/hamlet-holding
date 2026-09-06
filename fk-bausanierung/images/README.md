@@ -14,6 +14,8 @@ Datei mit demselben Namen an dieselbe Stelle — im Code ist nichts zu ändern.
 | Karussell — Zimmer Lichtvoute  | `projekte/zimmer-laminat-lichtvoute.jpg` | zimmer-laminat-mit-lichtvoute |
 | Karussell — Ladenbau           | `projekte/ladenbau-oichi.jpg`          | **fehlt noch** — Ladenlokal mit beleuchteter Schrift |
 | Karussell — Gartenpflege       | `projekte/gartenpflege.jpg`            | **fehlt noch** — Garten mit Rasenmäher und Rosenbogen |
+| Karussell — Natursteinmauer    | `projekte/garten-natursteinmauer.jpg`  | garten-natursteinmauer |
+| Karussell — Flur Großformat    | `projekte/flur-grossformatfliesen.jpg` | flur-grossformatfliesen |
 | Fußzeile — Foto neben Kontakt  | `footer/handwerker.jpg`                | **fehlt noch** — Mitarbeiter mit Akkuschrauber an der Holzterrasse |
 | Logo (Kopf + Fußzeile), weiß   | `logo/fk-logo.png`                     | logo-fk-bausanierung-kastrati, freigestellt: weißer Hintergrund entfernt, Wortmarke hell, „FK"/„KASTRATI" im helleren Firmenblau |
 | Leistung — Bodenverlegung      | `leistungen/bodenverlegung.jpg`        | zimmer-laminat-mit-lichtvoute |
