@@ -90,7 +90,17 @@ export class Camera {
    * the globe to a single pixel.
    */
   headerReserve = HEADER_BAND;
+  /**
+   * Phone only: the globe's radius and centre as the page layout solved them
+   * (see ui/PhoneLayout). When set, the camera stops solving its own ring and
+   * simply puts the sphere where the document says it is — the DOM decides,
+   * the globe follows.
+   */
+  phoneFit: { R: number; cy: number } | null = null;
+  /** Page scroll in CSS px, applied to the aim every frame (phone only). */
+  scrollY = 0;
 
+  private height = 1;
   private pointer = new Vector2();
   private smooth = new Vector2();
   private scratch = new Vector3();
@@ -145,6 +155,17 @@ export class Camera {
   fit(width: number, height: number): void {
     this.cam.aspect = width / Math.max(height, 1);
     this.focal = height / 2 / Math.tan((FOV * Math.PI) / 360);
+    this.height = height;
+
+    if (this.phoneFit) {
+      this.distance = this.focal / Math.max(this.phoneFit.R, 1);
+      this.globeRadiusPx = this.phoneFit.R;
+      this.layout = 'ring';
+      this.ringScale = 1;
+      this.lookY = this.phoneLookY();
+      this.cam.updateProjectionMatrix();
+      return;
+    }
 
     // Only the space the constellation can actually occupy counts.
     const usable = Math.max(height - this.bottomReserve, height * 0.45);
@@ -194,6 +215,17 @@ export class Camera {
     this.cam.updateProjectionMatrix();
   }
 
+  /**
+   * Aim offset that lands the globe's centre at its page position minus the
+   * current scroll. Moving the camera rather than the globe keeps the world
+   * root free for the division view's own drop and zoom.
+   */
+  private phoneLookY(): number {
+    const fit = this.phoneFit!;
+    const atRest = this.focal / this.distance;
+    return -(this.height / 2 - (fit.cy - this.scrollY)) / atRest;
+  }
+
   setPointer(nx: number, ny: number): void {
     this.pointer.set(nx, ny);
   }
@@ -202,6 +234,8 @@ export class Camera {
     // Frame-rate independent damping: the same visual response at 30 and 144 Hz.
     const k = 1 - Math.pow(0.001, dt * 2.6);
     this.smooth.lerp(this.pointer, k);
+
+    if (this.phoneFit) this.lookY = this.phoneLookY();
 
     const d = this.distance * this.dolly;
     this.cam.position.set(this.smooth.x * 0.42, this.smooth.y * 0.3 + this.lookY, d);

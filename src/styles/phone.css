@@ -1,0 +1,789 @@
+/*
+ * Phones. See design/mobile/SPEC.md.
+ *
+ * Every rule here is scoped to html[data-form^='phone'] (set by Viewport), so
+ * desktop and tablet are untouched. The `html` in each selector is deliberate:
+ * it lifts these rules above the fitted-desktop fallbacks in ui.css, which
+ * carry an element selector of their own.
+ *
+ * Geometry comes from JS (ui/PhoneLayout): --mk-ax / --mk-ay are marker
+ * offsets in globe radii, multiplied here by the live --globe-radius. That
+ * multiplication is what attaches the constellation to the globe.
+ */
+
+/* ------------------------------------------------------- phone-only nodes */
+
+#scroller,
+#back,
+#enter-cue,
+.orbit,
+.beam,
+.beam__halo,
+.beam__node {
+  display: none;
+}
+
+.flight {
+  position: fixed;
+  left: 0;
+  top: 0;
+  z-index: 30;
+  margin: 0;
+  white-space: nowrap;
+  text-transform: uppercase;
+  color: #fff;
+  pointer-events: none;
+  will-change: transform;
+  text-shadow: 0 2px 18px rgba(1, 4, 16, 0.9);
+}
+
+/* ---------------------------------------------------------------- scroll */
+
+html[data-form^='phone'] #scroller {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  overflow: hidden;
+  overscroll-behavior: none;
+  scrollbar-width: none;
+  touch-action: pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-form^='phone'] #scroller::-webkit-scrollbar {
+  display: none;
+}
+
+html[data-form^='phone'][data-stage='select']:not([data-reveal]) #scroller {
+  overflow-y: auto;
+}
+
+/* In a division every horizontal move is the globe's. */
+html[data-form^='phone'][data-stage='detail'] #scroller {
+  touch-action: none;
+}
+
+#scroller-track {
+  width: 1px;
+}
+
+/* The page grows to its content. Nothing inside it is natively scrolled: the
+   blocks are moved by App.applyScroll, in the same frame as the globe. */
+html[data-form^='phone'] #ui {
+  bottom: auto;
+  min-height: 100%;
+  grid-template-rows: auto var(--ph-band, 60vh) auto auto;
+}
+
+html[data-form^='phone'] #stage {
+  height: var(--ph-band, 60vh);
+}
+
+/* ---------------------------------------------------------------- header */
+
+html[data-form='phone'] #topbar {
+  justify-content: center;
+  padding: calc(env(safe-area-inset-top) + clamp(22px, 9vw, 44px)) var(--pad-x) 0;
+}
+
+html[data-form='phone'] #anchor-header {
+  width: clamp(150px, 47vw, 210px);
+}
+
+html[data-form='phone-land'] #topbar {
+  justify-content: center;
+  padding: calc(env(safe-area-inset-top) + 14px) var(--pad-x) 0;
+}
+
+html[data-form='phone-land'] #anchor-header {
+  width: clamp(100px, 14vw, 130px);
+}
+
+/* Vertical, as in the reference: it leaves the full width to the mark. */
+html[data-form='phone'] #lang {
+  flex-direction: column;
+  gap: 3px;
+  right: 10px;
+  top: calc(env(safe-area-inset-top) + 16px);
+}
+
+html[data-form^='phone'] .lang__btn {
+  padding: 5px 8px;
+  margin-right: -0.16em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+html[data-form^='phone'] .lang__btn.is-active {
+  color: #fff;
+}
+
+/* Stacked targets must not overlap one another. */
+html[data-form='phone'] .lang__btn::after {
+  inset: -3px -12px;
+}
+
+html[data-form='phone'] .lang__sep {
+  width: 1px;
+  height: 9px;
+}
+
+html[data-form='phone-land'] #lang {
+  right: 18px;
+  top: calc(env(safe-area-inset-top) + 16px);
+}
+
+/* ------------------------------------------------------------------ intro */
+
+html[data-form^='phone'] #anchor-hero {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: clamp(200px, 57vw, 300px);
+}
+
+html[data-form='phone-land'] #anchor-hero {
+  width: min(280px, 58vh);
+}
+
+@media (hover: none) {
+  html[data-form^='phone'] #enter-cue {
+    display: flex;
+    position: fixed;
+    left: 0;
+    right: 0;
+    top: calc(50% + clamp(92px, 29vw, 128px));
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.6);
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  html[data-form='phone-land'] #enter-cue {
+    top: calc(50% + min(96px, 22vh));
+  }
+
+  html[data-form^='phone'][data-stage='universe'] #enter-cue {
+    animation:
+      cue-in 1.2s 2.2s var(--ease-out) forwards,
+      cue-breathe 3.6s 3.6s ease-in-out infinite;
+  }
+}
+
+#enter-cue i {
+  width: 22px;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.28);
+}
+
+@keyframes cue-in {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes cue-breathe {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.42;
+  }
+}
+
+/* ---------------------------------------------------------- constellation */
+
+html[data-form^='phone'] #hotspots:not(.is-rail) {
+  position: fixed;
+  left: var(--stage-cx);
+  top: var(--stage-cy);
+  right: auto;
+  bottom: auto;
+  width: 0;
+  height: 0;
+  padding: 0;
+  display: block;
+}
+
+html[data-form^='phone'] #hotspots:not(.is-rail)::before {
+  display: none;
+}
+
+html[data-form^='phone'] #hotspots:not(.is-rail) .hs {
+  position: absolute;
+  width: var(--mk-ic);
+  height: var(--mk-ic);
+  max-width: none;
+  transform: translate(-50%, -50%)
+    translate(
+      calc(var(--sx) * var(--mk-ax) * var(--globe-radius)),
+      calc(var(--sy) * var(--mk-ay) * var(--globe-radius))
+    );
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-form^='phone'] .hs__in {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+html[data-form^='phone'] .hs__rule {
+  display: none;
+}
+
+html[data-form^='phone'] #hotspots:not(.is-rail) .hs__glyph {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  margin: 0;
+  border: 1px solid color-mix(in srgb, var(--hs-accent-lit) 70%, transparent);
+  border-radius: calc(var(--mk-ic) * 0.24);
+  background: radial-gradient(120% 120% at 30% 0%, rgba(47, 122, 186, 0.3), rgba(3, 7, 22, 0.92) 62%);
+  box-shadow:
+    0 0 22px -6px rgba(88, 182, 242, 0.55),
+    inset 0 1px 0 rgba(160, 215, 255, 0.14);
+  transition:
+    transform 0.18s var(--ease-out),
+    box-shadow 0.3s var(--ease-out),
+    border-color 0.3s var(--ease-out);
+}
+
+html[data-form^='phone'] #hotspots:not(.is-rail) .hs__glyph::before {
+  inset: 3px;
+  border-radius: calc(var(--mk-ic) * 0.24 - 3px);
+  opacity: 0.5;
+}
+
+html[data-form^='phone'] #hotspots:not(.is-rail) .hs__glyph svg {
+  width: 64%;
+  height: 64%;
+}
+
+/* Touch has no hover: the glyph answers the finger at once, before the
+   descent has had time to begin. */
+html[data-form^='phone'] .hs:active .hs__glyph {
+  transform: scale(0.95);
+}
+
+html[data-form^='phone'] .hs.is-pressed .hs__glyph {
+  border-color: #8fd3ff;
+  background: radial-gradient(120% 120% at 30% 0%, rgba(70, 160, 230, 0.55), rgba(3, 7, 22, 0.9) 70%);
+  box-shadow:
+    0 0 34px -4px rgba(88, 182, 242, 0.95),
+    inset 0 0 0 1px rgba(160, 215, 255, 0.35);
+}
+
+html[data-form^='phone'] .hs.is-pressed .hs__glyph svg {
+  filter: drop-shadow(0 0 8px rgba(200, 232, 255, 0.95));
+}
+
+/* Labels sit outside each row and are anchored to the icon's *outer* edge:
+   centred, the longest Russian words run off the screen. Anchored outward,
+   every label grows into the free space towards the centre. */
+html[data-form^='phone'] #hotspots:not(.is-rail) .hs__name {
+  position: absolute;
+  font-size: var(--mk-fs);
+  line-height: 1.34;
+  letter-spacing: 0.15em;
+  white-space: pre;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+html[data-form='phone'] .hs[data-v='up'] .hs__name {
+  bottom: calc(100% + var(--mk-gap));
+}
+
+html[data-form='phone'] .hs[data-v='down'] .hs__name {
+  top: calc(100% + var(--mk-gap));
+}
+
+html[data-form='phone'] .hs[data-h='left'] .hs__name {
+  left: 0;
+  text-align: left;
+}
+
+html[data-form='phone'] .hs[data-h='right'] .hs__name {
+  right: 0;
+  margin-right: -0.15em;
+  text-align: right;
+}
+
+/* Landscape: the constellation turns sideways, labels on the outside. */
+html[data-form='phone-land'] #hotspots:not(.is-rail) .hs__name {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+html[data-form='phone-land'] .hs[data-h='left'] .hs__name {
+  right: calc(100% + var(--mk-gap));
+  text-align: right;
+}
+
+html[data-form='phone-land'] .hs[data-h='right'] .hs__name {
+  left: calc(100% + var(--mk-gap));
+  text-align: left;
+}
+
+/* The engine's region nodes are a desktop device; on a phone the beam
+   reaches into the sphere instead. */
+html[data-form^='phone'] .node,
+html[data-form^='phone'] .node-halo {
+  display: none;
+}
+
+html[data-form^='phone'] .orbit {
+  display: inline;
+}
+
+html[data-form^='phone'] .beam,
+html[data-form^='phone'] .beam__halo,
+html[data-form^='phone'] .beam__node {
+  display: inline;
+  opacity: 0;
+}
+
+.orbit__ring {
+  fill: none;
+  stroke: rgba(130, 200, 255, 0.42);
+  stroke-width: 1.1;
+  stroke-dasharray: 1 4;
+  stroke-linecap: round;
+}
+
+.orbit__ring--outer {
+  stroke: rgba(120, 190, 255, 0.13);
+  stroke-dasharray: none;
+}
+
+.beam {
+  fill: none;
+  stroke: rgba(175, 228, 255, 0.95);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  filter: drop-shadow(0 0 4px rgba(74, 216, 255, 0.9));
+}
+
+.beam__halo {
+  fill: none;
+  stroke: rgba(74, 216, 255, 0.6);
+  stroke-width: 1;
+}
+
+.beam__node {
+  fill: #cfeeff;
+  filter: drop-shadow(0 0 6px #4ad8ff);
+}
+
+/* ------------------------------------------------------------------- dock */
+
+html[data-form^='phone'] #hotspots.is-rail {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: auto;
+  bottom: calc(env(safe-area-inset-bottom) + 22px);
+  width: fit-content;
+  height: auto;
+  margin: 0 auto;
+  transform: none;
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  border-radius: 26px;
+  background: rgba(4, 8, 24, 0.5);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(120, 180, 255, 0.2);
+  box-shadow: 0 20px 50px -18px rgba(0, 0, 0, 0.9);
+}
+
+html[data-form^='phone'] #hotspots.is-rail .hs {
+  position: relative;
+  width: 64px;
+  height: 56px;
+  transform: none;
+}
+
+html[data-form^='phone'] #hotspots.is-rail .hs__glyph {
+  position: absolute;
+  inset: 0;
+  width: auto;
+  height: auto;
+  border: 1px solid transparent;
+  border-radius: 18px;
+  background: none;
+  box-shadow: none;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+html[data-form^='phone'] #hotspots.is-rail .hs__glyph::before {
+  display: none;
+}
+
+html[data-form^='phone'] #hotspots.is-rail .hs__glyph svg {
+  width: 32px;
+  height: 32px;
+  stroke-width: 2;
+  color: rgba(255, 255, 255, 0.62);
+  filter: none;
+  transition: color 0.3s var(--ease-out);
+}
+
+html[data-form^='phone'] #hotspots.is-rail .hs.is-active .hs__glyph {
+  border-color: color-mix(in srgb, var(--accent-blue-lit) 75%, transparent);
+  background: linear-gradient(160deg, rgba(47, 122, 186, 0.38), rgba(47, 122, 186, 0.06));
+  box-shadow:
+    0 0 24px -6px var(--accent-blue-lit),
+    inset 0 0 0 3px rgba(2, 4, 14, 0.55),
+    inset 0 0 0 4px rgba(47, 122, 186, 0.45);
+  transition:
+    border-color 0.35s var(--ease-out),
+    background 0.35s var(--ease-out),
+    box-shadow 0.35s var(--ease-out);
+}
+
+html[data-form^='phone'] #hotspots.is-rail .hs.is-active .hs__glyph svg {
+  color: #fff;
+  filter: drop-shadow(0 0 7px rgba(190, 226, 255, 0.7));
+}
+
+html[data-form^='phone'] #hotspots.is-rail .hs__name {
+  display: none;
+}
+
+@media (max-width: 359px) {
+  html[data-form='phone'] #hotspots.is-rail {
+    gap: 6px;
+    padding: 6px;
+    border-radius: 22px;
+    bottom: calc(env(safe-area-inset-bottom) + 16px);
+  }
+
+  html[data-form='phone'] #hotspots.is-rail .hs {
+    width: 56px;
+    height: 48px;
+  }
+
+  html[data-form='phone'] #hotspots.is-rail .hs__glyph {
+    border-radius: 15px;
+  }
+
+  html[data-form='phone'] #hotspots.is-rail .hs__glyph svg {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+html[data-form='phone-land'] #hotspots.is-rail {
+  bottom: calc(env(safe-area-inset-bottom) + 12px);
+}
+
+html[data-form='phone-land'] #hotspots.is-rail .hs {
+  width: 58px;
+  height: 46px;
+}
+
+/* ------------------------------------------------------------ the division */
+
+html[data-form^='phone'] #back:not([hidden]) {
+  display: inline-flex;
+  position: absolute;
+  left: 14px;
+  top: calc(env(safe-area-inset-top) + 12px);
+  z-index: 22;
+  height: 36px;
+  align-items: center;
+  gap: 4px;
+  padding: 0 14px 0 7px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  background: rgba(2, 4, 14, 0.42);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: #fff;
+  opacity: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-form^='phone'] #back svg {
+  width: 18px;
+  height: 18px;
+}
+
+html[data-form^='phone'] #back::after {
+  content: '';
+  position: absolute;
+  inset: -5px -4px;
+}
+
+html[data-form='phone'] #detail {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  top: calc(env(safe-area-inset-top) + 136px);
+  width: auto;
+  transform: none;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0;
+}
+
+html[data-form='phone-land'] #detail {
+  position: fixed;
+  left: max(40px, env(safe-area-inset-left));
+  right: auto;
+  top: calc(env(safe-area-inset-top) + 64px);
+  width: min(580px, 64vw);
+  transform: none;
+  align-items: flex-start;
+  text-align: left;
+  gap: 0;
+}
+
+html[data-form^='phone'] #detail-eyebrow {
+  margin: 0 0 14px;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+}
+
+html[data-form^='phone'] .detail-count {
+  margin-left: 0.5em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+html[data-form^='phone'] #detail-title {
+  margin: 0 0 18px;
+  white-space: pre-line;
+  font-size: clamp(24px, 7.6vw, 32px);
+  font-weight: 700;
+  line-height: 1.04;
+  letter-spacing: 0.004em;
+  text-align: left;
+}
+
+html[data-form='phone-land'] #detail-title {
+  margin-bottom: 12px;
+  font-size: 24px;
+}
+
+html[data-form^='phone'] #detail-body {
+  max-width: 60ch;
+  font-size: clamp(14.5px, 3.95vw, 16px);
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  pointer-events: auto;
+  scrollbar-width: none;
+}
+
+html[data-form='phone-land'] #detail-body {
+  font-size: 13.5px;
+  line-height: 1.55;
+}
+
+html[data-form^='phone'] #detail-body.is-clipped {
+  -webkit-mask-image: linear-gradient(#000 calc(100% - 1.6em), transparent);
+  mask-image: linear-gradient(#000 calc(100% - 1.6em), transparent);
+}
+
+/* Once read to the end, the last line is not faded away. */
+html[data-form^='phone'] #detail-body.is-clipped.is-end {
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+@media (max-width: 359px) {
+  html[data-form='phone'] #detail {
+    left: 20px;
+    right: 20px;
+    /* The language switch is a narrow column on the right; the copy starts
+       beside it, not under it. */
+    top: calc(env(safe-area-inset-top) + 100px);
+  }
+
+  html[data-form='phone'] #detail-body {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+}
+
+/* ------------------------------------------------------- figures + footer */
+
+html[data-form^='phone'] #kpi {
+  gap: 18px;
+  padding: 0 18px;
+}
+
+html[data-form^='phone'] #kpi-heading {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 14px;
+  font-size: 10.5px;
+  line-height: 1.75;
+  letter-spacing: 0.26em;
+  color: rgba(255, 255, 255, 0.66);
+}
+
+/* The rules frame the second line — "— in den letzten 7 Jahren —". */
+html[data-form^='phone'] #kpi-heading::before,
+html[data-form^='phone'] #kpi-heading::after {
+  content: '';
+  flex: 1;
+  max-width: 46px;
+  height: 1px;
+  margin-bottom: 0.9em;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28));
+}
+
+html[data-form^='phone'] #kpi-heading::after {
+  background: linear-gradient(270deg, transparent, rgba(255, 255, 255, 0.28));
+}
+
+html[data-form^='phone'] .kh__t {
+  margin-right: -0.26em;
+}
+
+html[data-form^='phone'] #kpi-list {
+  width: 100%;
+  row-gap: 10px;
+}
+
+html[data-form^='phone'] .kpi {
+  padding: 0 4px;
+}
+
+html[data-form^='phone'] .kpi__label {
+  font-size: 10.5px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 0.07em;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+html[data-form^='phone'] .kpi__rule {
+  width: 26px;
+}
+
+html[data-form^='phone'] .kpi__value {
+  font-size: clamp(13.5px, 4.2vw, 18px);
+  white-space: nowrap;
+}
+
+html[data-form^='phone'] .kpi__num {
+  font-weight: 300;
+  letter-spacing: -0.015em;
+}
+
+html[data-form^='phone'] .kpi__unit {
+  font-weight: 300;
+}
+
+html[data-form^='phone'] #footer {
+  gap: 2px;
+  padding: 34px 18px calc(env(safe-area-inset-bottom) + 24px);
+}
+
+html[data-form^='phone'] #footer-partner {
+  margin-bottom: 26px;
+  gap: 12px;
+  opacity: 0.9;
+}
+
+html[data-form^='phone'] #footer-partner-label {
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+html[data-form^='phone'] .seyband {
+  font-size: 20px;
+}
+
+html[data-form^='phone'] #footer-legal {
+  font-size: 11px;
+}
+
+/* Statutory links have to be easy to find (§ 5 DDG), not merely present. */
+html[data-form^='phone'] #footer-links {
+  gap: 18px;
+}
+
+html[data-form^='phone'] #footer-links a {
+  padding: 12px 4px;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+@media (max-width: 359px) {
+  html[data-form='phone'] #kpi-heading {
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+  }
+
+  html[data-form='phone'] #kpi-heading::before,
+  html[data-form='phone'] #kpi-heading::after {
+    max-width: 22px;
+  }
+
+  html[data-form='phone'] .kpi__label {
+    font-size: 9.5px;
+    letter-spacing: 0.05em;
+  }
+}
+
+/* ------------------------------------------------------------ legal sheet */
+
+html[data-form^='phone'] #legal {
+  top: calc(env(safe-area-inset-top) + 28px);
+  padding: 30px 22px 0;
+  gap: 16px;
+  border-radius: 22px 22px 0 0;
+  border-top: 1px solid rgba(120, 180, 255, 0.18);
+  background: rgba(3, 6, 18, 0.97);
+}
+
+html[data-form^='phone'] #legal::before {
+  content: '';
+  position: absolute;
+  top: 9px;
+  left: 50%;
+  width: 36px;
+  height: 4px;
+  margin-left: -18px;
+  border-radius: 2px;
+  background: rgba(255, 255, 255, 0.25);
+}
+
+html[data-form^='phone'] #legal-close {
+  top: 16px;
+  right: 14px;
+}
+
+html[data-form^='phone'] #legal-title {
+  padding-right: 52px;
+  font-size: 22px;
+}
+
+html[data-form^='phone'] #legal-body {
+  font-size: 14px;
+  line-height: 1.7;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 48px);
+}

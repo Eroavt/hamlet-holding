@@ -1,0 +1,26 @@
+/* ================= v3: storyboard states ================= */
+.board__head h1 { font-size: 24px; }
+.sb { padding: 28px 56px 8px; }
+.sb h2 { margin: 0 0 22px; font-size: 18px; font-weight: 600; display: flex; align-items: baseline; gap: 14px; }
+.sb h2 span { font-size: 13px; font-weight: 400; color: #8b8f9c; }
+.sb__row { display: flex; align-items: flex-start; gap: 18px; }
+.sb__arrow { align-self: center; margin-top: -120px; color: #5c6170; font-size: 22px; }
+.fig figcaption b { color: #9fdcff; font-variant-numeric: tabular-nums; }
+
+/* labels anchored to the outer edge of the icon */
+.mk--ol .mk__label { left: 0; transform: none; text-align: left; margin-right: 0; }
+.mk--or .mk__label { left: auto; right: 0; transform: none; text-align: right; margin-right: -.15em; }
+
+/* pressed */
+.mk.is-on .mk__glyph { border-color: #8fd3ff; box-shadow: 0 0 34px -4px rgba(88,182,242,.95), inset 0 0 0 1px rgba(160,215,255,.35); background: radial-gradient(120% 120% at 30% 0%, rgba(70,160,230,.55), rgba(3,7,22,.9) 70%); }
+.mk.is-on .mk__glyph svg { filter: drop-shadow(0 0 8px rgba(200,232,255,.95)); }
+.beam { stroke-dasharray: none; }
+.beam__halo { fill: none; stroke: rgba(74,216,255,.55); stroke-width: 1; }
+.beam__node { fill: #bfe9ff; filter: drop-shadow(0 0 6px #4ad8ff); }
+
+/* the label in flight, on its way to becoming the headline */
+.flying { position: absolute; z-index: 4; margin: 0; font-weight: 650; line-height: 1.12; letter-spacing: .08em; text-transform: uppercase; color: #fff; text-shadow: 0 4px 30px rgba(1,4,16,.9); }
+
+/* dock indicator mid-swipe */
+.dock { position: absolute; }
+.dock__ind { position: absolute; top: 8px; width: 64px; height: 56px; border-radius: 18px; border: 1px solid color-mix(in srgb, var(--lit) 75%, transparent); background: linear-gradient(160deg, rgba(47,122,186,.3), rgba(47,122,186,.04)); box-shadow: 0 0 24px -6px var(--lit); pointer-events: none; }

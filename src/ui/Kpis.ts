@@ -73,8 +73,15 @@ export class Kpis {
     this.list.append(frag);
   }
 
-  setCopy(d: Dictionary): void {
-    this.heading.innerHTML = markFigure(d.kpiHeading);
+  /**
+   * `phone` swaps in the hand-broken captions and the two-line heading; the
+   * three phone columns are too narrow for the desktop wording to wrap well.
+   */
+  setCopy(d: Dictionary, phone = false): void {
+    // Wrapped so the phone layout can flank the heading with rules as a flex
+    // row without every text run becoming a flex item of its own.
+    const text = markFigure(phone ? d.kpiHeadingPhone : d.kpiHeading).replace(/\n/g, '<br>');
+    this.heading.innerHTML = `<span class="kh__t">${text}</span>`;
     // Rebound on every language change. The old button is discarded with the
     // markup, so there is nothing left listening.
     this.heading
@@ -84,9 +91,27 @@ export class Kpis {
     for (const k of KPIS) {
       const cell = this.list.querySelector<HTMLElement>(`.kpi[data-id="${k.id}"]`);
       if (!cell) continue;
-      cell.querySelector('.kpi__label')!.textContent = d.kpis[k.id] ?? '';
+      cell.querySelector('.kpi__label')!.textContent = (phone ? d.kpisPhone[k.id] : d.kpis[k.id]) ?? '';
       cell.querySelector('.kpi__num')!.textContent = formatKpi(k.value);
       cell.querySelector('.kpi__unit')!.textContent = k.unit;
+    }
+  }
+
+  /**
+   * Phone safety net: a caption that still outgrows its column — a long
+   * Russian word on a 320 px screen — steps down until it fits rather than
+   * running into its neighbour. Hand-placed breaks make this the rare case.
+   */
+  fit(): void {
+    for (const label of this.list.querySelectorAll<HTMLElement>('.kpi__label')) {
+      label.style.fontSize = '';
+      const cell = label.parentElement!;
+      const room = cell.clientWidth - 6;
+      let size = parseFloat(getComputedStyle(label).fontSize);
+      while (label.scrollWidth > room && size > 8.5) {
+        size -= 0.5;
+        label.style.fontSize = `${size}px`;
+      }
     }
   }
 

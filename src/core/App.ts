@@ -20,6 +20,8 @@ import { LangSwitch } from '@/ui/LangSwitch';
 import { Legal } from '@/ui/Legal';
 import { GlobeSwipe } from '@/ui/GlobeSwipe';
 import { Kpis } from '@/ui/Kpis';
+import { flyText } from '@/ui/Flight';
+import { phoneDetailPlacement, phoneTextLimit, solvePhone, type PhoneSolution } from '@/ui/PhoneLayout';
 
 import { DIVISIONS, divisionBySlug, type Division } from '@/content/divisions';
 import { detectLang, dict, rememberLang, type Dictionary, type Lang } from '@/content/i18n';
@@ -38,6 +40,9 @@ const DETAIL_TOP = 0.16;
  */
 const DETAIL_IN_PACE = 0.66;
 const DETAIL_OUT_PACE = 0.88;
+/** The phone descent is choreographed at its own speed; see selectPhone(). */
+const PHONE_IN_PACE = 0.86;
+const PHONE_OUT_PACE = 0.95;
 
 export class App {
   private ticker = new Ticker();
@@ -73,6 +78,20 @@ export class App {
   private footerLegal = document.getElementById('footer-legal')!;
   private partnerLabel = document.getElementById('footer-partner-label')!;
   private bootEl = document.getElementById('boot')!;
+
+  // ---- phone -------------------------------------------------------------
+  private ui = document.getElementById('ui')!;
+  private scroller = document.getElementById('scroller')!;
+  private track = document.getElementById('scroller-track')!;
+  private backBtn = document.getElementById('back') as HTMLButtonElement;
+  private backLabel = document.getElementById('back-label')!;
+  private enterCue = document.querySelector<HTMLElement>('#enter-cue span')!;
+  private phone: PhoneSolution | null = null;
+  private scrollY = 0;
+  /** The blocks that scroll with the page; the rest follow through the camera. */
+  private scrollers: ((v: number) => void)[] = [];
+  /** Direction of the last swipe, so the copy slides the way the finger went. */
+  private pendingDir: 1 | -1 | null = null;
 
   private centre = { x: 0, y: 0 };
   private tmpA = new Vector3();
@@ -167,9 +186,26 @@ export class App {
 
     // Turning the globe in the detail view walks through the divisions.
     this.swipe.canStart = () => this.stage.stage === 'detail' && !this.stage.busy;
-    this.swipe.onDrag = (rad) => this.world.setAim(this.aimAnchor + rad);
-    this.swipe.onCancel = () => this.world.aimTo(this.aimAnchor);
+    this.swipe.onDrag = (rad, px) => {
+      this.world.setAim(this.aimAnchor + rad);
+      if (this.isPhone) this.detail.lean(px);
+    };
+    this.swipe.onCancel = () => {
+      this.world.aimTo(this.aimAnchor);
+      if (this.isPhone) this.detail.unlean();
+    };
     this.swipe.onCommit = (dir) => this.stepDivision(dir);
+    // On a phone the whole screen turns the globe, except the controls on it.
+    const canvas = document.getElementById('gl');
+    this.swipe.accepts = (t) =>
+      this.isPhone
+        ? !(t instanceof Element && t.closest('button, a, #legal'))
+        : t === canvas;
+
+    this.scrollers = ['#topbar', '#kpi', '#footer'].map((sel) =>
+      gsap.quickSetter(document.querySelector(sel)!, 'y', 'px') as (v: number) => void,
+    );
+    this.backBtn.addEventListener('click', () => this.back());
 
     new Cursor();
 
@@ -186,20 +222,103 @@ export class App {
     this.logo.place(0);
   }
 
+  private get isPhone(): boolean {
+    return this.viewport.form !== 'default';
+  }
+
   private applyCopy(): void {
     this.hotspots.setCopy(this.copy);
     this.footerLegal.textContent = this.copy.company;
     this.partnerLabel.textContent = this.copy.partnerLabel;
     this.legal.setCopy(this.copy);
-    this.kpis.setCopy(this.copy);
+    this.kpis.setCopy(this.copy, this.isPhone);
+    this.backLabel.textContent = this.copy.overviewLabel;
+    this.backBtn.setAttribute('aria-label', this.copy.backLabel);
+    this.enterCue.textContent = this.copy.enterCue;
     this.refreshLogoLabel();
 
     const slug = this.router.read();
     const d = slug ? divisionBySlug(slug) : undefined;
-    if (d) this.detail.fill(d, this.copy);
+    if (d) this.detail.fill(d, this.copy, this.isPhone);
 
     // Label lengths differ per language, which changes the block's height.
-    this.syncFooterHeight();
+    this.relayout();
+  }
+
+  /** One entry point for everything that depends on the window's shape. */
+  private relayout(): void {
+    if (this.isPhone) this.solvePhoneLayout();
+    else {
+      if (this.phone) this.leavePhoneLayout();
+      this.syncFooterHeight();
+    }
+  }
+
+  /**
+   * Solves the phone composition and hands it to everything that depends on
+   * it: the camera puts the globe where the page says, the markers are hung
+   * off the globe in radii, and the scroll track is sized to the page.
+   */
+  private solvePhoneLayout(): void {
+    const { width, height, form } = this.viewport;
+    const de = document.documentElement;
+    // The header scrolls with the page; measure it as if it were at the top.
+    const headerBottom = this.headerEl.getBoundingClientRect().bottom + this.scrollY;
+
+    // Landscape needs the widest label, which depends on the label size the
+    // solve itself picks — a second pass settles it.
+    let sol: PhoneSolution | null = null;
+    for (let pass = 0; pass < 2; pass++) {
+      sol = solvePhone(form, width, height, headerBottom, this.hotspots.widestLabel());
+      if (!sol) return;
+      this.hotspots.setPhone(sol);
+    }
+    // A pair of labels that cannot share its row steps the type down — all
+    // four together, so the composition stays one size.
+    if (form === 'phone') {
+      for (let pass = 0; pass < 3; pass++) {
+        const fill = this.hotspots.rowFill();
+        if (fill <= 1) break;
+        sol = { ...sol!, fs: Math.max(9, (sol!.fs / fill) * 0.98) };
+        this.hotspots.setPhone(sol);
+      }
+    }
+    this.phone = sol!;
+    const band = sol!.bandBottom - headerBottom + (form === 'phone' ? 30 : 24);
+    de.style.setProperty('--ph-band', `${Math.round(band)}px`);
+
+    this.camera.phoneFit = { R: sol!.R, cy: sol!.cy };
+    this.camera.scrollY = this.scrollY;
+    this.camera.fit(width, height);
+    this.lastRadius = this.lastCx = this.lastCy = -1;
+
+    this.hotspots.measureLabels();
+    this.kpis.fit();
+    this.track.style.height = `${Math.ceil(this.ui.offsetHeight)}px`;
+    this.logo.measure();
+  }
+
+  private leavePhoneLayout(): void {
+    this.phone = null;
+    this.hotspots.setPhone(null);
+    this.camera.phoneFit = null;
+    this.scroller.scrollTop = 0;
+    this.applyScroll(true);
+  }
+
+  /**
+   * Phone: one scroll offset, applied to everything in the same frame — the
+   * page blocks directly, the globe through the camera, the markers through
+   * the globe, the mark through its own placement. Nothing is scrolled
+   * natively, so nothing can drift against anything else during a fling.
+   */
+  private applyScroll(force = false): void {
+    const s = this.phone ? Math.round(this.scroller.scrollTop * 2) / 2 : 0;
+    if (!force && s === this.scrollY) return;
+    this.scrollY = s;
+    this.camera.scrollY = s;
+    this.logo.setScroll(s);
+    for (const set of this.scrollers) set(-s);
   }
 
   /**
@@ -447,10 +566,16 @@ export class App {
     if (here < 0) return;
     const next = DIVISIONS[(here + direction + DIVISIONS.length) % DIVISIONS.length];
     this.swipe.setEnabled(false);
+    this.pendingDir = direction;
     this.select(next);
   }
 
   private select(d: Division, silent = false): void {
+    if (this.isPhone && this.phone) {
+      if (this.stage.stage === 'detail') this.slidePhone(d);
+      else this.selectPhone(d, silent);
+      return;
+    }
     if (!this.stage.go('detail')) return;
     this.stage.busy = true;
     this.swipe.setEnabled(false);
@@ -498,6 +623,7 @@ export class App {
 
   private back(): void {
     if (this.stage.stage !== 'detail' || this.stage.busy) return;
+    if (this.isPhone && this.phone) return this.backPhone();
     this.stage.busy = true;
     this.swipe.setEnabled(false);
     this.router.go(null);
@@ -518,6 +644,184 @@ export class App {
     tl.to(this.world.root.scale, { x: 1, y: 1, z: 1, duration: 1.0, ease: 'power3.inOut' }, 0.1);
     tl.to(this.world.buildings, { scale: 1, duration: 1.0, ease: 'power3.inOut' }, 0.1);
     tl.add(this.hotspots.restore(), 0.4);
+  }
+
+  /* -------------------------------------------------------- phone flow */
+
+  /**
+   * Phone: a division is chosen. Not a page change — a camera move.
+   *
+   * The icon lights and a beam reaches from it into the globe; the globe swells,
+   * sinks and turns, and because the markers hang off the globe in radii they
+   * fly out through the screen edges with it — the visitor passes through the
+   * orbit. The label that was tapped detaches and grows into the headline, the
+   * mark shrinks to its crown, and the four come back as the dock. Every
+   * element on the page that arrives came from somewhere on the one before.
+   */
+  private selectPhone(d: Division, silent: boolean): void {
+    if (!this.stage.go('detail')) return;
+    this.stage.busy = true;
+    this.swipe.setEnabled(false);
+    if (!silent) this.router.go(d.slug);
+    this.refreshLogoLabel();
+    this.world.setFocus(null);
+
+    this.detail.fill(d, this.copy, true);
+    this.detail.prepare();
+    const fit = this.phonePlacement();
+    const label = this.hotspots.labelOf(d.slug);
+
+    const tl = gsap.timeline({ onComplete: () => this.settleDetail() });
+    tl.timeScale(PHONE_IN_PACE);
+
+    // A visitor who has scrolled down is first brought back to the top, so the
+    // descent always starts from the composition it was designed from.
+    const lead = this.reduced ? 0 : this.scrollY > 2 ? 0.35 : 0;
+    if (lead) tl.to(this.scroller, { scrollTop: 0, duration: lead, ease: 'power2.inOut' }, 0);
+
+    if (this.reduced) return this.selectPhoneReduced(d, fit, tl);
+
+    tl.add(this.hotspots.departPhone(d.slug), lead);
+    tl.call(() => this.world.aimAt(this.hotspotDir(d)), undefined, lead + 0.12);
+    tl.to([this.kpis.el, this.footer], { opacity: 0, duration: 0.3, ease: 'power2.in' }, lead);
+
+    const t0 = lead + 0.2;
+    tl.to(this.world.root.position, { x: 0, y: -fit.drop, duration: 1.3, ease: 'power3.inOut' }, t0);
+    tl.to(this.world.root.scale, { x: fit.zoom, y: fit.zoom, z: fit.zoom, duration: 1.4, ease: 'power3.inOut' }, t0);
+    tl.to(this.world.buildings, { scale: fit.zoom, duration: 1.4, ease: 'power3.inOut' }, t0);
+
+    // The flight is measured when it starts, after any scroll-back has landed.
+    if (label) tl.call(() => void flyText(label, this.detail.titleEl, 1.05), undefined, t0 + 0.04);
+    tl.to(this.logo, { crown: 1, duration: 1.0, ease: 'power3.inOut' }, t0 + 0.06);
+
+    tl.add(this.detail.showRest(), t0 + 0.8);
+    tl.add(() => (this.backBtn.hidden = false), t0 + 0.75);
+    tl.fromTo(this.backBtn, { opacity: 0, x: -10 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out' }, t0 + 0.75);
+    tl.add(this.hotspots.dockPhone(d.slug), t0 + 0.9);
+  }
+
+  /** Reduced motion: the same end state, reached by crossfade alone. */
+  private selectPhoneReduced(d: Division, fit: { drop: number; zoom: number }, tl: gsap.core.Timeline): void {
+    const at = tl.duration();
+    tl.to([this.kpis.el, this.footer, this.hotspots.el, this.hotspots.svg], { opacity: 0, duration: 0.25 }, at);
+    tl.add(() => {
+      gsap.set(this.world.root.position, { x: 0, y: -fit.drop });
+      gsap.set(this.world.root.scale, { x: fit.zoom, y: fit.zoom, z: fit.zoom });
+      this.world.buildings.scale = fit.zoom;
+      this.world.aimAt(this.hotspotDir(d));
+      this.logo.crown = 1;
+      this.backBtn.hidden = false;
+      gsap.set(this.detail.titleEl, { opacity: 1 });
+    });
+    tl.to(this.backBtn, { opacity: 1, duration: 0.25 });
+    tl.add(this.detail.showRest(), '<');
+    tl.add(this.hotspots.dockPhone(d.slug), '<');
+    tl.set(this.hotspots.svg, { opacity: 1 });
+  }
+
+  private settleDetail(): void {
+    this.stage.busy = false;
+    // Where a drag springs back to, captured once the globe has turned.
+    gsap.delayedCall(0.5, () => {
+      this.aimAnchor = this.world.aim;
+      this.swipe.setEnabled(true);
+    });
+  }
+
+  /** Phone: exactly the descent, run backwards. */
+  private backPhone(): void {
+    const slug = this.router.read();
+    this.stage.busy = true;
+    this.swipe.setEnabled(false);
+    this.router.go(null);
+    this.world.releaseAim();
+
+    const label = slug ? this.hotspots.labelOf(slug) : null;
+    const tl = gsap.timeline({
+      onComplete: () => {
+        this.stage.busy = false;
+        this.stage.reset('select');
+        this.backBtn.hidden = true;
+        this.detail.el.hidden = true;
+        this.refreshLogoLabel();
+      },
+    });
+    tl.timeScale(PHONE_OUT_PACE);
+
+    tl.add(this.detail.hideRest(), 0);
+    tl.to(this.backBtn, { opacity: 0, x: -10, duration: 0.22, ease: 'power2.in' }, 0);
+    tl.add(this.hotspots.returnPhone(slug), 0);
+    tl.to(this.world.root.position, { x: 0, y: 0, duration: 1.1, ease: 'power3.inOut' }, 0.1);
+    tl.to(this.world.root.scale, { x: 1, y: 1, z: 1, duration: 1.1, ease: 'power3.inOut' }, 0.1);
+    tl.to(this.world.buildings, { scale: 1, duration: 1.1, ease: 'power3.inOut' }, 0.1);
+    tl.to(this.logo, { crown: 0, duration: 0.95, ease: 'power3.inOut' }, 0.15);
+
+    // The label's resting place is known before the globe gets there: it is a
+    // fixed offset from the marker, and the marker a fixed offset from the
+    // globe's resting centre. So the headline can fly home while the globe is
+    // still on its way up, instead of waiting for it.
+    if (label && slug && !this.reduced) {
+      const home = this.hotspots.restLabelRect(slug, this.phone!.cx, this.phone!.cy, this.phone!.R);
+      tl.call(() => void flyText(this.detail.titleEl, label, 0.95, 'power3.inOut', home), undefined, 0.12);
+    } else if (label) {
+      tl.set(label, { opacity: 1 }, 0.3);
+    }
+
+    // Held until the constellation is home: the lower markers ride in from
+    // below and would otherwise cross the figures on their way.
+    tl.to([this.kpis.el, this.footer], { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.9);
+    tl.call(() => this.kpis.countUp(), undefined, 0.9);
+  }
+
+  /**
+   * Phone, from one division to the next — by swipe or by the dock. The globe
+   * turns to the new region, the copy slides out the way the finger went and
+   * the next arrives from the other side, the dock's light moves across.
+   */
+  private slidePhone(d: Division): void {
+    const slug = this.router.read();
+    const from = DIVISIONS.findIndex((x) => x.slug === slug);
+    const to = DIVISIONS.indexOf(d);
+    if (from === to || !this.stage.go('detail')) return;
+    const dir: 1 | -1 = this.pendingDir ?? (to > from ? 1 : -1);
+    this.pendingDir = null;
+
+    this.stage.busy = true;
+    this.swipe.setEnabled(false);
+    this.router.go(d.slug);
+    this.world.aimAt(this.hotspotDir(d));
+    this.hotspots.setActive(d.slug);
+
+    const tl = gsap.timeline({ onComplete: () => this.settleDetail() });
+    tl.add(
+      this.detail.slide(dir, () => {
+        this.detail.fill(d, this.copy, true);
+        // Copy lengths differ, so the horizon has to follow the new text.
+        const fit = this.phonePlacement();
+        gsap.to(this.world.root.position, { y: -fit.drop, duration: 0.6, ease: 'power3.out' });
+      }),
+    );
+  }
+
+  /** Where the globe sits under the open division, solved from its copy. */
+  private phonePlacement(): { drop: number; zoom: number } {
+    const { width, height, form } = this.viewport;
+    const sol = this.phone!;
+    const body = this.detail.el.querySelector<HTMLElement>('#detail-body')!;
+    body.style.maxHeight = '';
+    body.classList.remove('is-clipped');
+    // Long copy (Russian, mostly) scrolls inside its own column rather than
+    // pushing the horizon under the dock — cut on a whole line, never through
+    // one, and faded so it reads as "more below" rather than as broken.
+    const over = this.detail.el.getBoundingClientRect().bottom - phoneTextLimit(form, height);
+    if (over > 0) {
+      const line = parseFloat(getComputedStyle(body).lineHeight) || 24;
+      const lines = Math.max(3, Math.floor((body.offsetHeight - over) / line));
+      body.style.maxHeight = `${lines * line}px`;
+      body.classList.add('is-clipped');
+    }
+    const textBottom = this.detail.el.getBoundingClientRect().bottom;
+    return phoneDetailPlacement(form, width, height, textBottom, sol.R, sol.cy);
   }
 
   /**
@@ -542,6 +846,9 @@ export class App {
     this.revealing = true;
     this.swipe.setEnabled(false);
     this.hotspots.el.style.pointerEvents = 'none';
+    // The sequence is framed on the screen, not on the page.
+    document.documentElement.dataset.reveal = '';
+    if (this.phone && this.scrollY > 0) gsap.to(this.scroller, { scrollTop: 0, duration: 0.45, ease: 'power2.inOut' });
 
     const chrome = [this.topbar, this.footer, this.kpis.el, this.hotspots.el, this.hotspots.svg];
     const tl = gsap.timeline({ defaults: { overwrite: 'auto' } });
@@ -638,6 +945,7 @@ export class App {
   private endRevelation(): void {
     if (!this.revealing) return;
     this.revealing = false;
+    delete document.documentElement.dataset.reveal;
 
     const detail = this.stage.stage === 'detail';
     const chrome = [this.topbar, this.footer, this.kpis.el, this.hotspots.el, this.hotspots.svg];
@@ -698,11 +1006,13 @@ export class App {
       this.post.resize(width, height, dpr);
       this.world.resize(width, height, dpr, this.camera.cam.fov, width / Math.max(height, 1));
       this.logo.measure();
-      this.syncFooterHeight();
+      // A rotation can change the form: the copy carries per-form strings.
+      this.kpis.setCopy(this.copy, this.isPhone);
+      this.relayout();
       // The detail placement is solved against the window, so a resize while a
       // division is open has to re-solve it or the globe keeps the old fit.
       if (this.stage.stage === 'detail' && !this.stage.busy) {
-        const fit = this.detailPlacement();
+        const fit = this.phone ? this.phonePlacement() : this.detailPlacement();
         gsap.set(this.world.root.position, { y: -fit.drop });
         gsap.set(this.world.root.scale, { x: fit.zoom, y: fit.zoom, z: fit.zoom });
         this.world.buildings.scale = fit.zoom;
@@ -720,6 +1030,8 @@ export class App {
     window.addEventListener(
       'pointermove',
       (e) => {
+        // A finger dragging to scroll is not a gaze; parallax is for mice.
+        if (e.pointerType !== 'mouse') return;
         const nx = (e.clientX / this.viewport.width) * 2 - 1;
         const ny = -((e.clientY / this.viewport.height) * 2 - 1);
         this.camera.setPointer(nx, ny);
@@ -727,6 +1039,20 @@ export class App {
       { passive: true },
     );
 
+    // The page is not natively scrolled, so focus would not bring a link into
+    // view on its own. Keyboard users get the same page as everyone else.
+    this.ui.addEventListener('focusin', (e) => {
+      if (!this.phone || this.stage.stage !== 'select') return;
+      const r = (e.target as HTMLElement).getBoundingClientRect();
+      const h = this.viewport.height;
+      if (r.bottom > h - 24 || r.top < 0) {
+        this.scroller.scrollTo({ top: this.scrollY + r.top - h / 2, behavior: this.reduced ? 'auto' : 'smooth' });
+      }
+    });
+    // Web fonts change label and caption sizes after first layout.
+    void document.fonts?.ready.then(() => this.relayout());
+
+    this.legal.sheet = () => this.isPhone;
     this.legal.onRoute = (page) => this.router.goLegal(page);
     this.router.on('legal', ({ page }) => {
       if (page) this.legal.open(page, true);
@@ -748,10 +1074,16 @@ export class App {
   }
 
   private frame = (dt: number, elapsed: number): void => {
+    // Before the camera, so the globe and the page move in the same frame.
+    if (this.phone) this.applyScroll();
     this.camera.update(dt);
     this.world.update(dt, elapsed);
     this.syncStageMetrics();
-    this.hotspots.update(this.projectNode, this.world.totalSpin, this.camera.globeRadiusPx);
+    this.hotspots.update(
+      this.projectNode,
+      this.world.totalSpin,
+      this.camera.globeRadiusPx * this.world.root.scale.x,
+    );
     this.post.render(elapsed);
     if (this.pendingGrab) {
       const grab = this.pendingGrab;

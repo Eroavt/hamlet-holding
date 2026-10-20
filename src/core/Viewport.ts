@@ -5,6 +5,22 @@ type Events = {
 };
 
 /**
+ * Which composition the window gets.
+ *
+ * Phones are not small desktops. Below these sizes the overview stops being a
+ * single fitted frame and becomes a scrolling page built around a large globe,
+ * and the division view becomes a horizon with a dock. Decided from the
+ * *visible* size — an iPhone 16 in Safari is 393x659, not 393x852.
+ */
+export type Form = 'phone' | 'phone-land' | 'default';
+
+export function formFor(w: number, h: number): Form {
+  if (w <= 600 && h >= w) return 'phone';
+  if (h <= 500 && w > h) return 'phone-land';
+  return 'default';
+}
+
+/**
  * Single source of truth for size and pixel density.
  *
  * Resize is debounced and gated on the *pixel* size actually changing. On
@@ -17,6 +33,7 @@ export class Viewport extends Emitter<Events> {
   height = 0;
   dpr = 1;
   aspect = 1;
+  form: Form = 'default';
   readonly isTouch: boolean;
 
   private timer = 0;
@@ -54,6 +71,10 @@ export class Viewport extends Emitter<Events> {
     this.height = h;
     this.dpr = dpr;
     this.aspect = w / Math.max(h, 1);
+    this.form = formFor(w, h);
+    if (document.documentElement.dataset.form !== this.form) {
+      document.documentElement.dataset.form = this.form;
+    }
     return changed;
   }
 

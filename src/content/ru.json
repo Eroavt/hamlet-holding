@@ -2,6 +2,8 @@
   "brand": "Hamlet Holding Group",
   "enterLabel": "Войти в Hamlet Holding Group",
   "backLabel": "Назад к обзору",
+  "overviewLabel": "Обзор",
+  "enterCue": "Нажмите, чтобы войти",
   "eyebrow": "Направление",
   "company": "Hamlet Holding GmbH",
   "imprint": "Выходные данные",
@@ -9,10 +11,16 @@
   "legalPending": "Эта страница ещё не написана.",
   "partnerLabel": "Наш эксклюзивный партнёр",
   "kpiHeading": "Наши показатели за последние 7 лет",
+  "kpiHeadingPhone": "Наши показатели\nза последние 7 лет",
   "kpis": {
     "leaseVolume": "Реализованный\nобъём аренды",
     "developedArea": "Освоенная\nземельная и полезная площадь",
     "projectVolume": "Реализованный\nобъём проектов"
+  },
+  "kpisPhone": {
+    "leaseVolume": "Реализованный\nобъём аренды",
+    "developedArea": "Освоенная\nземельная и\nполезная\nплощадь",
+    "projectVolume": "Реализованный\nобъём\nпроектов"
   },
   "legalGermanOnly": "Юридически обязательной является немецкая редакция этого документа.",
   "divisions": {
