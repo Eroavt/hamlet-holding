@@ -1,0 +1,72 @@
+/* ================= v2: the reference composition, refined ================= */
+
+.lock { position: absolute; left: 50%; transform: translateX(-50%); z-index: 3; }
+
+/* Language: vertical, as in the reference — it leaves the full width to the mark. */
+.vlang { position: absolute; right: 16px; top: 22px; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.vlang a { position: relative; padding: 5px 8px; font-size: 11px; font-weight: 600; letter-spacing: .16em; margin-right: -.16em; color: rgba(255,255,255,.42); }
+.vlang a.on { color: #fff; }
+.vlang a::after { content: ''; position: absolute; inset: -6px -10px; } /* 44 px target */
+.vlang i { width: 1px; height: 9px; background: rgba(255,255,255,.22); }
+.vlang--row { flex-direction: row; top: 18px; right: 20px; }
+.vlang--row i { height: 10px; }
+
+/* ---------- constellation ---------- */
+.orbit { position: absolute; left: 0; top: 0; z-index: 1; pointer-events: none; overflow: visible; }
+.orbit__ring { fill: none; stroke: rgba(130, 200, 255, .42); stroke-width: 1.1; stroke-dasharray: 1 4; stroke-linecap: round; }
+.orbit__ring--faint { stroke: rgba(120, 190, 255, .13); stroke-dasharray: none; }
+
+.mk { position: absolute; z-index: 2; width: var(--ic); height: var(--ic); transform: translate(-50%, -50%); display: block; }
+.mk__glyph { position: absolute; inset: 0; display: grid; place-items: center;
+  border: 1px solid color-mix(in srgb, var(--lit) 70%, transparent); border-radius: calc(var(--ic) * .24);
+  background: radial-gradient(120% 120% at 30% 0%, rgba(47,122,186,.30), rgba(3,7,22,.92) 62%);
+  box-shadow: 0 0 22px -6px rgba(88,182,242,.55), inset 0 1px 0 rgba(160,215,255,.14); }
+.mk__glyph::before { content: ''; position: absolute; inset: 3px; border: 1px solid var(--accent); border-radius: calc(var(--ic) * .24 - 3px); opacity: .5; }
+.mk__glyph svg { width: 64%; height: 64%; stroke-width: 2.1; color: #fff; filter: drop-shadow(0 0 5px rgba(190,226,255,.35)); }
+.mk__label { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; text-align: center;
+  font-size: var(--fs); font-weight: 600; line-height: 1.34; letter-spacing: .15em; margin-right: -.15em; text-transform: uppercase;
+  color: rgba(255,255,255,.92); text-shadow: 0 2px 14px rgba(0,0,0,.95); }
+.mk--up .mk__label { bottom: calc(100% + var(--gap)); }
+.mk--down .mk__label { top: calc(100% + var(--gap)); }
+.mk--left .mk__label, .mk--right .mk__label { top: 50%; transform: translateY(-50%); }
+.mk--left .mk__label { right: calc(100% + var(--gap)); left: auto; text-align: right; }
+.mk--right .mk__label { left: calc(100% + var(--gap)); text-align: left; }
+
+/* ---------- figures, partner, legal ---------- */
+.low { position: absolute; left: 18px; right: 18px; z-index: 2; display: flex; flex-direction: column; align-items: center; }
+.kh { margin: 0; width: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 14px; }
+.kh i { flex: 1; max-width: 46px; height: 1px; margin-bottom: .9em; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28)); }
+.kh i:last-child { background: linear-gradient(270deg, transparent, rgba(255,255,255,.28)); }
+.kh span { text-align: center; line-height: 1.75; font-size: 10.5px; font-weight: 600; letter-spacing: .26em; margin-right: -.24em; text-transform: uppercase; color: rgba(255,255,255,.66); }
+.kh .sig { font-size: 1.45em; }
+
+.kg { margin: 18px 0 0; width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto auto auto; row-gap: 10px; }
+.kc { display: grid; grid-template-rows: subgrid; grid-row: span 3; justify-items: center; text-align: center; }
+.kc + .kc { border-left: 1px solid rgba(255,255,255,.14); }
+.kc dt { font-size: 10.5px; font-weight: 700; line-height: 1.35; letter-spacing: .07em; text-transform: uppercase; color: rgba(255,255,255,.9); }
+.kr { width: 26px; height: 1px; align-self: center; background: rgba(255,255,255,.32); }
+.kc dd { margin: 0; font-size: 16.5px; font-weight: 300; line-height: 1; letter-spacing: -.015em; font-variant-numeric: lining-nums tabular-nums; white-space: nowrap; }
+.kc dd span { margin-left: .16em; }
+
+.pt { margin-top: 34px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.pt > span:first-child { font-size: 10px; font-weight: 600; letter-spacing: .26em; margin-right: -.26em; text-transform: uppercase; color: rgba(255,255,255,.5); }
+.pt .seyband { font-size: 20px; }
+
+.ft { margin-top: 30px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ft__co { font-size: 11px; font-weight: 500; letter-spacing: .3em; margin-right: -.3em; text-transform: uppercase; color: rgba(255,255,255,.88); text-shadow: 0 0 12px rgba(150,205,255,.45); }
+.ft__links { display: flex; align-items: center; gap: 14px; }
+.ft__links a { padding: 12px 4px; font-size: 11px; letter-spacing: .2em; text-transform: uppercase; color: rgba(255,255,255,.62); }
+.ft__links i { width: 1px; height: 11px; background: rgba(255,255,255,.22); }
+
+/* Below 360 px the heading cannot hold one line with its rules. */
+.low--sm { left: 14px; right: 14px; }
+.low--sm .kh i { max-width: 22px; }
+.low--sm .kh span { font-size: 9.5px; letter-spacing: .2em; }
+.low--sm .kc dt { font-size: 9.5px; letter-spacing: .05em; }
+.low--sm .kc dd { font-size: 13.5px; }
+
+/* ---------- detail with the vertical switch ---------- */
+.bar__crown--detail { top: 20px; z-index: 3; }
+.det2 { top: 150px; }
+.det2.det--sm { top: 118px; }
+.frame > .back { z-index: 6; top: 18px; }
