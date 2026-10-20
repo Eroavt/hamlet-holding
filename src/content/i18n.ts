@@ -51,8 +51,16 @@ function isLang(v: unknown): v is Lang {
 }
 
 export function detectLang(): Lang {
-  const stored = localStorage.getItem(STORAGE_KEY);
-  if (isLang(stored)) return stored;
+  // Reading storage throws outright where it is blocked (Safari with cookies
+  // disabled, a frame with partitioned storage). Unguarded, that rejected
+  // App.start() and the site fell through to the "needs WebGL 2" screen on a
+  // perfectly capable browser.
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (isLang(stored)) return stored;
+  } catch {
+    /* fall through to the browser's own preference */
+  }
   const nav = navigator.language.toLowerCase();
   // German is the house language, so it is also the fallback.
   if (nav.startsWith('ru')) return 'ru';
