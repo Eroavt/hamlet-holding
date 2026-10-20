@@ -2,6 +2,8 @@
   "brand": "Hamlet Holding Group",
   "enterLabel": "Hamlet Holding Group betreten",
   "backLabel": "Zurück zur Übersicht",
+  "overviewLabel": "Übersicht",
+  "enterCue": "Zum Betreten tippen",
   "eyebrow": "Geschäftsbereich",
   "company": "Hamlet Holding GmbH",
   "imprint": "Impressum",
@@ -9,10 +11,16 @@
   "legalPending": "Diese Seite ist noch nicht geschrieben.",
   "partnerLabel": "Zu unserem Exklusiv-Partner",
   "kpiHeading": "Unsere Kennzahlen in den letzten 7 Jahren",
+  "kpiHeadingPhone": "Unsere Kennzahlen\nin den letzten 7 Jahren",
   "kpis": {
     "leaseVolume": "Realisiertes\nMietvertragsvolumen",
     "developedArea": "Entwickelte\nGrund- und Nutzfläche",
     "projectVolume": "Realisiertes\nProjektvolumen"
+  },
+  "kpisPhone": {
+    "leaseVolume": "Realisiertes\nMietvertrags-\nvolumen",
+    "developedArea": "Entwickelte\nGrund- und\nNutzfläche",
+    "projectVolume": "Realisiertes\nProjekt-\nvolumen"
   },
   "legalGermanOnly": "",
   "divisions": {

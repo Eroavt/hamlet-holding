@@ -2,6 +2,8 @@
   "brand": "Hamlet Holding Group",
   "enterLabel": "Enter Hamlet Holding Group",
   "backLabel": "Back to overview",
+  "overviewLabel": "Overview",
+  "enterCue": "Tap to enter",
   "eyebrow": "Division",
   "company": "Hamlet Holding GmbH",
   "imprint": "Legal notice",
@@ -9,10 +11,16 @@
   "legalPending": "This page is not written yet.",
   "partnerLabel": "Our exclusive partner",
   "kpiHeading": "Our key figures over the past 7 years",
+  "kpiHeadingPhone": "Our key figures\nover the past 7 years",
   "kpis": {
     "leaseVolume": "Lease volume\nrealised",
     "developedArea": "Site and floor area\ndeveloped",
     "projectVolume": "Project volume\nrealised"
+  },
+  "kpisPhone": {
+    "leaseVolume": "Lease\nvolume\nrealised",
+    "developedArea": "Site and\nfloor area\ndeveloped",
+    "projectVolume": "Project\nvolume\nrealised"
   },
   "legalGermanOnly": "This is a legally binding document under German law and is reproduced here in the original German.",
   "divisions": {
