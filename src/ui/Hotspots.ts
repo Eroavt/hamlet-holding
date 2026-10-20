@@ -2,6 +2,7 @@ import gsap from 'gsap';
 import { Vector3 } from 'three';
 import { DIVISIONS, ICON_VIEWBOX, type Division } from '@/content/divisions';
 import type { Dictionary } from '@/content/i18n';
+import type { PhoneSolution } from './PhoneLayout';
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
 
@@ -29,7 +30,23 @@ interface Tile {
   node: SVGCircleElement;
   halo: SVGCircleElement;
   hot: boolean;
+  /** Phone corner: -1 left / up, +1 right / down. */
+  sx: number;
+  sy: number;
+  glyph: HTMLElement;
+  /** Label box relative to the marker centre, measured once per layout. */
+  labelBox: { x: number; y: number; w: number; h: number };
+  maskLabel: SVGRectElement;
+  maskGlyph: SVGRectElement;
 }
+
+/** Phone corners in division order: the reading order of the composition. */
+const CORNERS: readonly [number, number][] = [
+  [-1, -1],
+  [1, -1],
+  [-1, 1],
+  [1, 1],
+];
 
 /** Matches gl/data/rasterizeLand.ts so the anchor lands where it should. */
 function latLonToVec3(latDeg: number, lonDeg: number): Vector3 {
@@ -56,6 +73,19 @@ export class Hotspots {
   readonly svg: SVGSVGElement;
   private tiles: Tile[] = [];
   private scratch = { x: 0, y: 0 };
+  private origin = new Vector3();
+
+  /** Phone composition, or null on larger screens. */
+  private phone: PhoneSolution | null = null;
+  private ring: SVGCircleElement[] = [];
+  private beamLine!: SVGLineElement;
+  private beamHalo!: SVGCircleElement;
+  private beamNode!: SVGCircleElement;
+  /** 0..1 draw-in of the beam, and the tile it leaves from. */
+  beam = { p: 0, o: 0 };
+  private beamFrom: Tile | null = null;
+  /** Last drawn state of the phone furniture, so a still globe costs nothing. */
+  private drawn = '';
 
   onSelect: ((division: Division) => void) | null = null;
   onFocus: ((dir: Vector3 | null) => void) | null = null;
@@ -74,7 +104,43 @@ export class Hotspots {
   private build(): void {
     const frag = document.createDocumentFragment();
 
-    DIVISIONS.forEach((d) => {
+    // Phone furniture lives in the same full-screen svg as the nodes so it is
+    // positioned in the same frame, from the same projection. The orbit is
+    // masked wherever a label or an icon sits, so it reads as a line passing
+    // behind them rather than through them.
+    const defs = document.createElementNS(SVG_NS, 'defs');
+    const mask = document.createElementNS(SVG_NS, 'mask');
+    mask.setAttribute('id', 'orbit-mask');
+    mask.setAttribute('maskUnits', 'userSpaceOnUse');
+    const full = document.createElementNS(SVG_NS, 'rect');
+    full.setAttribute('width', '10000');
+    full.setAttribute('height', '10000');
+    full.setAttribute('x', '-5000');
+    full.setAttribute('y', '-5000');
+    full.setAttribute('fill', '#fff');
+    mask.append(full);
+    defs.append(mask);
+    const orbit = document.createElementNS(SVG_NS, 'g');
+    orbit.setAttribute('class', 'orbit');
+    orbit.setAttribute('mask', 'url(#orbit-mask)');
+    for (const cls of ['orbit__ring', 'orbit__ring orbit__ring--outer']) {
+      const c = document.createElementNS(SVG_NS, 'circle');
+      c.setAttribute('class', cls);
+      orbit.append(c);
+      this.ring.push(c);
+    }
+    this.beamLine = document.createElementNS(SVG_NS, 'line');
+    this.beamLine.setAttribute('class', 'beam');
+    this.beamHalo = document.createElementNS(SVG_NS, 'circle');
+    this.beamHalo.setAttribute('class', 'beam__halo');
+    this.beamHalo.setAttribute('r', '12');
+    this.beamNode = document.createElementNS(SVG_NS, 'circle');
+    this.beamNode.setAttribute('class', 'beam__node');
+    this.beamNode.setAttribute('r', '3.2');
+    this.svg.append(defs, orbit, this.beamLine, this.beamHalo, this.beamNode);
+
+    DIVISIONS.forEach((d, index) => {
+      const [sx, sy] = CORNERS[index % CORNERS.length];
       const halo = document.createElementNS(SVG_NS, 'circle');
       halo.setAttribute('class', `node-halo node-halo--${d.accent}`);
       halo.setAttribute('r', '9');
@@ -91,6 +157,10 @@ export class Hotspots {
       root.dataset.accent = d.accent;
       root.style.setProperty('--angle', `${d.angle}deg`);
       root.style.setProperty('--dist', `${d.dist}`);
+      root.style.setProperty('--sx', String(sx));
+      root.style.setProperty('--sy', String(sy));
+      root.dataset.v = sy < 0 ? 'up' : 'down';
+      root.dataset.h = sx < 0 ? 'left' : 'right';
 
       const inner = document.createElement('span');
       inner.className = 'hs__in';
@@ -114,6 +184,14 @@ export class Hotspots {
       root.append(inner);
       frag.append(root);
 
+      const maskLabel = document.createElementNS(SVG_NS, 'rect');
+      const maskGlyph = document.createElementNS(SVG_NS, 'rect');
+      for (const r of [maskLabel, maskGlyph]) {
+        r.setAttribute('fill', '#000');
+        r.setAttribute('rx', '10');
+        mask.append(r);
+      }
+
       const t: Tile = {
         division: d,
         root,
@@ -123,6 +201,12 @@ export class Hotspots {
         node,
         halo,
         hot: false,
+        sx,
+        sy,
+        glyph,
+        labelBox: { x: 0, y: 0, w: 0, h: 0 },
+        maskLabel,
+        maskGlyph,
       };
       this.tiles.push(t);
 
@@ -152,6 +236,72 @@ export class Hotspots {
     document.getElementById('cursor')?.classList.remove('is-hot');
   }
 
+  /** Switches the constellation between the phone composition and the ring. */
+  setPhone(sol: PhoneSolution | null): void {
+    this.phone = sol;
+    const st = document.documentElement.style;
+    if (!sol) return;
+    st.setProperty('--mk-ax', sol.axR.toFixed(4));
+    st.setProperty('--mk-ay', sol.ayR.toFixed(4));
+    st.setProperty('--mk-ic', `${sol.ic}px`);
+    st.setProperty('--mk-fs', `${sol.fs.toFixed(2)}px`);
+    st.setProperty('--mk-gap', `${sol.gap}px`);
+  }
+
+  /**
+   * Largest share of its row's span that a pair of labels takes up, gap
+   * included. Above 1, the two labels of a row would run into one another —
+   * the longest Russian pair does on a 320 px screen.
+   */
+  rowFill(): number {
+    if (!this.phone) return 0;
+    const span = 2 * this.phone.axR * this.phone.R + this.phone.ic;
+    let worst = 0;
+    for (const sy of [-1, 1]) {
+      const row = this.tiles.filter((t) => t.sy === sy);
+      const need = row.reduce((sum, t) => sum + t.name.scrollWidth, 0) + 16;
+      worst = Math.max(worst, need / span);
+    }
+    return worst;
+  }
+
+  /** Widest label, for the landscape solve — measured, since it is per language. */
+  widestLabel(): number {
+    return Math.max(0, ...this.tiles.map((t) => t.name.scrollWidth));
+  }
+
+  /**
+   * Where each label sits relative to its marker, for the orbit mask. Labels
+   * only move with the marker as a whole, so this is measured on layout, not
+   * per frame. Uses offsets rather than rects, since a transform anywhere up
+   * the tree would otherwise leak into the numbers.
+   */
+  measureLabels(): void {
+    this.drawn = '';
+    for (const t of this.tiles) {
+      const g = t.glyph;
+      const n = t.name;
+      const gx = g.offsetLeft + g.offsetWidth / 2;
+      const gy = g.offsetTop + g.offsetHeight / 2;
+      t.labelBox = {
+        x: n.offsetLeft - gx - 6,
+        y: n.offsetTop - gy - 4,
+        w: n.offsetWidth + 12,
+        h: n.offsetHeight + 8,
+      };
+    }
+  }
+
+  /** Marks the division whose page is open, for the dock. */
+  setActive(slug: string | null): void {
+    for (const t of this.tiles) t.root.classList.toggle('is-active', t.division.slug === slug);
+  }
+
+  tileFor(slug: string): { root: HTMLElement; name: HTMLElement; glyph: HTMLElement } | null {
+    const t = this.tiles.find((x) => x.division.slug === slug);
+    return t ? { root: t.root, name: t.name, glyph: t.glyph } : null;
+  }
+
   setCopy(d: Dictionary): void {
     for (const t of this.tiles) {
       const copy = d.divisions[t.division.id];
@@ -163,7 +313,8 @@ export class Hotspots {
 
   /**
    * Places the nodes. Called every frame with a projector that returns the
-   * screen position of a world point plus how much it faces the camera.
+   * screen position of a world point plus how much it faces the camera, and
+   * the globe's projected radius including any scale on the world root.
    *
    * The nodes carry the connection to the globe on their own — a lit point
    * over the real city, turning with the sphere and dimming as it passes the
@@ -172,6 +323,10 @@ export class Hotspots {
    */
   update(project: Projector, spin: number, radius: number): void {
     if (!this.el.classList.contains('is-live')) return;
+    if (this.phone) {
+      this.updatePhone(project, radius);
+      return;
+    }
 
     const axis = new Vector3(0, 1, 0);
     const world = new Vector3();
@@ -194,6 +349,184 @@ export class Hotspots {
       t.halo.style.opacity = String(t.hot ? front * 0.55 : 0);
       t.halo.setAttribute('r', String(t.hot ? radius * 0.075 + 8 : 9));
     }
+  }
+
+  /**
+   * Phone: the orbit through the four markers, its mask, and the beam. All of
+   * it is derived from the projected globe, so it rides with the sphere through
+   * the descent exactly as the markers do.
+   */
+  private updatePhone(project: Projector, R: number): void {
+    const sol = this.phone!;
+    this.origin.set(0, 0, 0);
+    project(this.origin, this.scratch);
+    const cx = this.scratch.x;
+    const cy = this.scratch.y;
+    // The ring and its mask only change when the globe moves or the beam
+    // draws. Rewriting a full-screen mask every frame regardless is a real
+    // cost on a phone GPU for a picture that has not changed.
+    const docked = this.el.classList.contains('is-rail');
+    const key = `${cx.toFixed(1)}|${cy.toFixed(1)}|${R.toFixed(1)}|${this.beam.p.toFixed(3)}|${this.beam.o.toFixed(3)}|${docked}`;
+    if (key === this.drawn) return;
+    this.drawn = key;
+    const d = Math.hypot(sol.axR, sol.ayR) * R;
+
+    this.ring[0].setAttribute('cx', cx.toFixed(1));
+    this.ring[0].setAttribute('cy', cy.toFixed(1));
+    this.ring[0].setAttribute('r', d.toFixed(1));
+    this.ring[1].setAttribute('cx', cx.toFixed(1));
+    this.ring[1].setAttribute('cy', cy.toFixed(1));
+    this.ring[1].setAttribute('r', (d + 9).toFixed(1));
+
+    for (const t of this.tiles) {
+      const mx = cx + t.sx * sol.axR * R;
+      const my = cy + t.sy * sol.ayR * R;
+      const b = t.labelBox;
+      t.maskLabel.setAttribute('x', (mx + b.x).toFixed(1));
+      t.maskLabel.setAttribute('y', (my + b.y).toFixed(1));
+      t.maskLabel.setAttribute('width', docked ? '0' : b.w.toFixed(1));
+      t.maskLabel.setAttribute('height', b.h.toFixed(1));
+      const g = sol.ic + 14;
+      t.maskGlyph.setAttribute('x', (mx - g / 2).toFixed(1));
+      t.maskGlyph.setAttribute('y', (my - g / 2).toFixed(1));
+      t.maskGlyph.setAttribute('width', String(g));
+      t.maskGlyph.setAttribute('height', String(g));
+    }
+
+    // The beam: from the chosen icon to the point on the sphere that faces it.
+    // The division is not *somewhere* on the planet — it reaches into it.
+    const from = this.beamFrom;
+    if (from && this.beam.o > 0.001) {
+      const mx = cx + from.sx * sol.axR * R;
+      const my = cy + from.sy * sol.ayR * R;
+      const ux = mx - cx;
+      const uy = my - cy;
+      const len = Math.hypot(ux, uy) || 1;
+      const ex = cx + (ux / len) * R * 0.72;
+      const ey = cy + (uy / len) * R * 0.72;
+      // Start at the icon's edge, not its centre, so the line leaves the frame.
+      const sxp = mx - (ux / len) * (sol.ic * 0.55);
+      const syp = my - (uy / len) * (sol.ic * 0.55);
+      const total = Math.hypot(ex - sxp, ey - syp);
+      this.beamLine.setAttribute('x1', sxp.toFixed(1));
+      this.beamLine.setAttribute('y1', syp.toFixed(1));
+      this.beamLine.setAttribute('x2', ex.toFixed(1));
+      this.beamLine.setAttribute('y2', ey.toFixed(1));
+      this.beamLine.style.strokeDasharray = `${total.toFixed(1)}`;
+      this.beamLine.style.strokeDashoffset = `${(total * (1 - this.beam.p)).toFixed(1)}`;
+      for (const c of [this.beamHalo, this.beamNode]) {
+        c.setAttribute('cx', ex.toFixed(1));
+        c.setAttribute('cy', ey.toFixed(1));
+      }
+      const tip = Math.max(0, (this.beam.p - 0.8) / 0.2);
+      this.beamLine.style.opacity = String(this.beam.o);
+      this.beamNode.style.opacity = String(this.beam.o * tip);
+      this.beamHalo.style.opacity = String(this.beam.o * tip * 0.8);
+    } else {
+      this.beamLine.style.opacity = '0';
+      this.beamNode.style.opacity = '0';
+      this.beamHalo.style.opacity = '0';
+    }
+  }
+
+  /**
+   * Phone, leaving the overview for a division.
+   *
+   * Nothing here moves a marker: they are attached to the globe through CSS,
+   * so as App swells and sinks the sphere they fly out through the screen
+   * edges on their own. This only decides who is lit, what fades, and when the
+   * row of four becomes the dock.
+   */
+  departPhone(slug: string): gsap.core.Timeline {
+    const chosen = this.tiles.find((t) => t.division.slug === slug)!;
+    const others = this.tiles.filter((t) => t !== chosen);
+    this.beamFrom = chosen;
+    this.tiles.forEach((t) => (t.root.tabIndex = -1));
+    const tl = gsap.timeline();
+
+    tl.add(() => chosen.root.classList.add('is-pressed'), 0);
+    tl.fromTo(this.beam, { p: 0, o: 1 }, { p: 1, duration: 0.3, ease: 'power2.out' }, 0);
+    tl.to(others.map((t) => t.inner), { opacity: 0.3, duration: 0.25, ease: 'power2.out' }, 0);
+    tl.to(others.map((t) => t.name), { opacity: 0, duration: 0.3, ease: 'power2.in' }, 0.22);
+    // The orbit and the icons stay lit while the globe carries them outward —
+    // passing through the ring is the point — and only go as they reach the
+    // edges of the screen.
+    tl.to(this.beam, { o: 0, duration: 0.4, ease: 'power2.in' }, 0.42);
+    tl.to(this.svg.querySelector('.orbit'), { opacity: 0, duration: 0.5, ease: 'power2.in' }, 0.8);
+    tl.to(others.map((t) => t.inner), { opacity: 0.55, duration: 0.3, ease: 'power2.out' }, 0.45);
+    tl.to(this.tiles.map((t) => t.glyph), { opacity: 0, duration: 0.45, ease: 'power2.in' }, 0.9);
+    return tl;
+  }
+
+  /** The four come back as the dock — called once the globe has landed. */
+  dockPhone(slug: string): gsap.core.Timeline {
+    const tl = gsap.timeline();
+    tl.add(() => {
+      this.el.classList.add('is-rail');
+      this.setActive(slug);
+      for (const t of this.tiles) {
+        t.root.classList.remove('is-pressed');
+        t.root.tabIndex = 0;
+        gsap.set(t.inner, { opacity: 1 });
+        gsap.set(t.name, { opacity: 0 });
+        gsap.set(t.glyph, { opacity: 1 });
+      }
+    });
+    // immediateRender off: this timeline is built at the tap, a second before
+    // it plays, and a fromTo would otherwise hide the constellation at once.
+    tl.fromTo(
+      this.el,
+      { opacity: 0, y: 26 },
+      { opacity: 1, y: 0, duration: 0.55, ease: 'power3.out', immediateRender: false },
+    );
+    return tl;
+  }
+
+  /**
+   * Phone, back to the overview. The dock goes, the markers reappear where the
+   * still-large globe puts them — off the screen edges — and ride back in as
+   * App shrinks it. The chosen label is restored by App once its headline has
+   * flown back into it.
+   */
+  returnPhone(slug: string | null): gsap.core.Timeline {
+    const tl = gsap.timeline();
+    tl.to(this.el, { opacity: 0, y: 20, duration: 0.25, ease: 'power2.in' }, 0);
+    tl.add(() => {
+      this.el.classList.remove('is-rail');
+      this.setActive(null);
+      for (const t of this.tiles) {
+        gsap.set(t.inner, { opacity: 1 });
+        gsap.set(t.glyph, { opacity: 0 });
+        gsap.set(t.name, { opacity: 0 });
+      }
+      gsap.set(this.el, { y: 0, opacity: 1 });
+    });
+    tl.to(this.tiles.map((t) => t.glyph), { opacity: 1, duration: 0.6, ease: 'power2.out', stagger: 0.05 }, 0.3);
+    tl.to(
+      this.tiles.filter((t) => t.division.slug !== slug).map((t) => t.name),
+      { opacity: 1, duration: 0.5, ease: 'power2.out', stagger: 0.05 },
+      0.65,
+    );
+    tl.to(this.svg.querySelector('.orbit'), { opacity: 1, duration: 0.6, ease: 'power2.out' }, 0.7);
+    return tl;
+  }
+
+  /**
+   * Where a marker's label will be once the globe is back at rest — the
+   * landing point for a headline flying home before the globe has arrived.
+   */
+  restLabelRect(slug: string, cx: number, cy: number, R: number): DOMRect | null {
+    const t = this.tiles.find((x) => x.division.slug === slug);
+    if (!t || !this.phone) return null;
+    const mx = cx + t.sx * this.phone.axR * R;
+    const my = cy + t.sy * this.phone.ayR * R;
+    const b = t.labelBox;
+    return new DOMRect(mx + b.x + 6, my + b.y + 4, b.w - 12, b.h - 8);
+  }
+
+  /** The label element a headline flies out of and back into. */
+  labelOf(slug: string): HTMLElement | null {
+    return this.tiles.find((t) => t.division.slug === slug)?.name ?? null;
   }
 
   reveal(instant = false): gsap.core.Timeline {

@@ -27,7 +27,17 @@ export class Logo {
 
   private hero: Rect = { x: 0, y: 0, w: 400 };
   private head: Rect = { x: 0, y: 0, w: 140 };
+  private crownSlot: Rect = { x: 0, y: 0, w: 81 };
   private travel = 0;
+  private crownT = 0;
+  private word: HTMLElement;
+  private sub: HTMLElement;
+  /**
+   * Phone: page scroll, applied to the header end of the journey only. The
+   * header scrolls with the page; the hero position is the centre of the
+   * screen and does not.
+   */
+  private scroll = 0;
 
   private moveX!: (v: number) => void;
   private moveY!: (v: number) => void;
@@ -45,6 +55,8 @@ export class Logo {
     this.pings = Array.from(this.el.querySelectorAll<HTMLElement>('.ping'));
     this.heroAnchor = root.querySelector<HTMLElement>('#anchor-hero')!;
     this.headAnchor = root.querySelector<HTMLElement>('#anchor-header')!;
+    this.word = this.el.querySelector<HTMLElement>('.logo__word')!;
+    this.sub = this.el.querySelector<HTMLElement>('.logo__sub')!;
     this.reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     this.moveX = gsap.quickTo(this.breathe, 'x', { duration: 0.7, ease: 'power3.out' });
@@ -60,7 +72,36 @@ export class Logo {
     const a = this.heroAnchor.getBoundingClientRect();
     const b = this.headAnchor.getBoundingClientRect();
     this.hero = { x: a.left, y: a.top, w: a.width };
-    this.head = { x: b.left, y: b.top, w: b.width };
+    // The header may be mid-scroll when this runs; store it at scroll 0.
+    this.head = { x: b.left, y: b.top + this.scroll, w: b.width };
+    // The crown alone, 26 px tall and centred, level with the back button.
+    // The crown is the top 53.25 % of the lockup's height.
+    const w = 26 / 0.5325 / (507 / 841);
+    this.crownSlot = { x: window.innerWidth / 2 - w / 2, y: 17, w };
+    this.place(this.travel);
+  }
+
+  /** Phone page scroll, in CSS px. */
+  setScroll(y: number): void {
+    if (y === this.scroll) return;
+    this.scroll = y;
+    this.place(this.travel);
+  }
+
+  /**
+   * 0 = the full lockup in the header, 1 = only the crown, small, in the bar
+   * of a division page. The wordmark and the subline fade out as it shrinks,
+   * so the mark the visitor tapped is the one that stays with them.
+   */
+  get crown(): number {
+    return this.crownT;
+  }
+
+  set crown(v: number) {
+    this.crownT = v;
+    const o = String(Math.max(0, 1 - v * 1.6));
+    this.word.style.opacity = o;
+    this.sub.style.opacity = o;
     this.place(this.travel);
   }
 
@@ -76,12 +117,19 @@ export class Logo {
   /** 0 = centre of the universe, 1 = parked in the header. */
   place(t: number): void {
     this.travel = t;
-    const s = gsap.utils.interpolate(this.hero.w, this.head.w, t) / BASE_WIDTH;
-    const x = gsap.utils.interpolate(this.hero.x, this.head.x, t);
+    const lerp = gsap.utils.interpolate;
+    let w = lerp(this.hero.w, this.head.w, t);
+    let x = lerp(this.hero.x, this.head.x, t);
     // A slight bow, so it arcs rather than slides on a ruler.
     const bow = -Math.sin(t * Math.PI) * 28;
-    const y = gsap.utils.interpolate(this.hero.y, this.head.y, t) + bow;
-    gsap.set(this.el, { x, y, scale: s });
+    let y = lerp(this.hero.y, this.head.y - this.scroll, t) + bow;
+    if (this.crownT > 0) {
+      const c = this.crownT;
+      w = lerp(w, this.crownSlot.w, c);
+      x = lerp(x, this.crownSlot.x, c);
+      y = lerp(y, this.crownSlot.y, c);
+    }
+    gsap.set(this.el, { x, y, scale: w / BASE_WIDTH });
   }
 
   /** Starts the breathing and the radar pings. */

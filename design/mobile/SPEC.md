@@ -108,8 +108,8 @@ a screen came from somewhere on the previous one.
 | Intro | Mark centred, cue fades in after 2 s | — |
 | Enter | Stars collapse into the globe (existing shader); mark arcs up into its slot | 0–2.6 s |
 | Arrive | City lights → orbit draws → markers de-blur one by one → figures count up | 2.2–3.4 s |
-| Tap a division | Icon lights; a beam connects it to its city on the globe; others dim to 35 % | 0–180 ms |
-| Descend | Globe swells and sinks, turning that city to face you. The orbit is attached to the globe, so the markers ride out past the screen edges — you fly through the ring. The tapped label detaches and grows into the headline. Mark shrinks to the crown. | 180–1300 ms |
+| Tap a division | Icon lights; a beam reaches from it into the globe (the region links are visual only, so it points at the sphere, not at a city); others dim | 0–300 ms |
+| Descend | Globe swells and sinks and turns. The orbit is attached to the globe, so the markers ride out past the screen edges — you fly through the ring. The tapped label detaches and grows into the headline. Mark shrinks to the crown. | 180–1300 ms |
 | Land | Eyebrow, then body line by line; dock rises from below | 900–1500 ms |
 | Switch | Swipe anywhere: globe follows the finger to the next city; text slides in swipe direction; dock indicator slides | 450 ms after release |
 | Back | Exactly reversed: ring contracts in from the edges, headline shrinks back into its label | 0.88× pace |
@@ -119,3 +119,17 @@ a screen came from somewhere on the previous one.
 Every transition is interruptible (a tap mid-flight retargets from where it is) and has
 a reduced-motion version (crossfade, no flight). Browser back, the iOS edge-swipe and
 the on-screen button all run the same reverse timeline.
+
+## Implementation notes
+
+- `ui/PhoneLayout.ts` solves the composition from the width; `Camera.phoneFit` puts
+  the globe there. Marker offsets are in globe radii (`--mk-ax/--mk-ay`), so the
+  constellation rides with the sphere through every transition without a tween.
+- Scroll: `#scroller` only supplies native scroll physics. `App.applyScroll` applies
+  its offset once per frame to the page blocks, the camera and the mark, so nothing
+  drifts during a fling.
+- `ui/Flight.ts` flies the tapped label into the headline line by line.
+- Verification: `scripts/phone/sweep.mjs` (15 formats × 3 languages, collision
+  check), `film.mjs` (slow-motion filmstrips), `check.mjs` (one size, quick look).
+  They drive the system Chrome through the `playwright` package, which is not a
+  project dependency: `npx -p playwright node scripts/phone/sweep.mjs`.

@@ -18,18 +18,30 @@ export class GlobeSwipe {
   private startX = 0;
   private lastDelta = 0;
 
-  /** Called continuously with the rotation delta in radians. */
-  onDrag: ((radians: number) => void) | null = null;
+  /** Called continuously with the rotation delta in radians, and in pixels. */
+  onDrag: ((radians: number, px: number) => void) | null = null;
   /** +1 = next division, -1 = previous. */
   onCommit: ((direction: 1 | -1) => void) | null = null;
   /** Released without reaching the threshold. */
   onCancel: (() => void) | null = null;
   /** Asked before a drag starts; lets the app refuse mid-transition. */
   canStart: (() => boolean) | null = null;
+  /**
+   * Whether a press on this element may start a drag. By default only the
+   * canvas itself — on a desktop the copy is selectable text. On a phone App
+   * widens it to the whole screen: a horizon you can only turn by finding it
+   * is a gesture nobody discovers.
+   */
+  accepts: (target: EventTarget | null) => boolean = (t) => t === this.target;
+
+  /** Horizontal travel before a press counts as a drag rather than a tap. */
+  private static readonly SLOP = 8;
+  private startY = 0;
+  private dragging = false;
 
   constructor(target: HTMLElement) {
     this.target = target;
-    target.addEventListener('pointerdown', this.onDown);
+    window.addEventListener('pointerdown', this.onDown);
     window.addEventListener('pointermove', this.onMove, { passive: true });
     window.addEventListener('pointerup', this.onUp);
     window.addEventListener('pointercancel', this.onUp);
@@ -43,17 +55,30 @@ export class GlobeSwipe {
 
   private onDown = (e: PointerEvent): void => {
     if (!this.enabled || this.pointerId !== null) return;
+    if (!this.accepts(e.target)) return;
     if (this.canStart && !this.canStart()) return;
     this.pointerId = e.pointerId;
     this.startX = e.clientX;
+    this.startY = e.clientY;
     this.lastDelta = 0;
+    this.dragging = false;
     this.target.style.cursor = 'grabbing';
   };
 
   private onMove = (e: PointerEvent): void => {
     if (this.pointerId !== e.pointerId) return;
-    this.lastDelta = e.clientX - this.startX;
-    this.onDrag?.(this.lastDelta * GlobeSwipe.RADIANS_PER_PX);
+    const dx = e.clientX - this.startX;
+    if (!this.dragging) {
+      // A vertical move is somebody scrolling the copy, not turning the globe.
+      if (Math.abs(e.clientY - this.startY) > GlobeSwipe.SLOP && Math.abs(dx) < GlobeSwipe.SLOP) {
+        this.release(false);
+        return;
+      }
+      if (Math.abs(dx) < GlobeSwipe.SLOP) return;
+      this.dragging = true;
+    }
+    this.lastDelta = dx;
+    this.onDrag?.(this.lastDelta * GlobeSwipe.RADIANS_PER_PX, this.lastDelta);
   };
 
   private onUp = (e: PointerEvent): void => {
@@ -63,10 +88,13 @@ export class GlobeSwipe {
 
   private release(commit: boolean): void {
     const delta = this.lastDelta;
+    const dragged = this.dragging;
     this.pointerId = null;
     this.lastDelta = 0;
+    this.dragging = false;
     this.target.style.cursor = this.enabled ? 'grab' : '';
 
+    if (!dragged) return;
     if (commit && Math.abs(delta) >= GlobeSwipe.THRESHOLD) {
       // Dragging the globe leftwards brings the next region round from the
       // right, so that direction reads as "forward".
@@ -77,7 +105,7 @@ export class GlobeSwipe {
   }
 
   dispose(): void {
-    this.target.removeEventListener('pointerdown', this.onDown);
+    window.removeEventListener('pointerdown', this.onDown);
     window.removeEventListener('pointermove', this.onMove);
     window.removeEventListener('pointerup', this.onUp);
     window.removeEventListener('pointercancel', this.onUp);

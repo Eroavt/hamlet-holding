@@ -1,6 +1,8 @@
 import './styles/tokens.css';
 import './styles/base.css';
 import './styles/ui.css';
+// Last, so it only ever overrides — every rule in it is scoped to a phone form.
+import './styles/phone.css';
 
 import gsap from 'gsap';
 import { App } from './core/App';

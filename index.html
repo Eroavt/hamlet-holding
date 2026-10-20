@@ -35,10 +35,22 @@
     <!-- The one and only WebGL surface. Never re-created for the lifetime of the page. -->
     <canvas id="gl" aria-hidden="true"></canvas>
 
+    <!-- Phone only. Supplies native scroll physics and nothing else: its offset
+         is read once per frame and applied to the globe, the mark, the markers
+         and the page together, so none of them can drift against the others
+         during a fling. -->
+    <div id="scroller" aria-hidden="true"><div id="scroller-track"></div></div>
+
     <!-- Everything below floats above the canvas in its own compositor layer. -->
     <div id="ui">
       <header id="topbar">
         <div id="anchor-header" class="logo-anchor" aria-hidden="true"></div>
+        <!-- Phone only: in a division the way back has to be visible, not just
+             tapping the mark. -->
+        <button id="back" type="button" hidden>
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg>
+          <span id="back-label"></span>
+        </button>
         <!-- Buttons are generated from content/i18n.ts LANGS so the order and
              the set of languages live in one place. -->
         <nav id="lang" aria-label="Language"></nav>
@@ -61,6 +73,8 @@
             </span>
           </span>
         </button>
+
+        <p id="enter-cue" aria-hidden="true"><i></i><span></span><i></i></p>
 
         <!-- Division tiles are generated from src/content/divisions.ts -->
         <div id="hotspots" role="group" aria-label="Business divisions"></div>

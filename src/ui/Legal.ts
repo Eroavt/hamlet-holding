@@ -76,6 +76,8 @@ export class Legal {
   private copy!: Dictionary;
 
   onOpen: (() => void) | null = null;
+  /** Phone: the documents open as a sheet rising from the bottom edge. */
+  sheet: () => boolean = () => false;
   /** Fired whenever the overlay opens or closes, so the URL can follow it. */
   onRoute: ((page: LegalPage | null) => void) | null = null;
 
@@ -136,7 +138,8 @@ export class Legal {
     if (!silent) this.onRoute?.(page);
     this.el.hidden = false;
     this.onOpen?.();
-    gsap.fromTo(this.el, { opacity: 0 }, { opacity: 1, duration: 0.4, ease: 'power2.out' });
+    const rise = this.sheet() ? 48 : 0;
+    gsap.fromTo(this.el, { opacity: 0, y: rise }, { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' });
     this.close.focus();
   }
 
@@ -144,6 +147,7 @@ export class Legal {
     if (!this.el.hidden && !silent) this.onRoute?.(null);
     gsap.to(this.el, {
       opacity: 0,
+      y: this.sheet() ? 40 : 0,
       duration: 0.3,
       ease: 'power2.in',
       onComplete: () => {
