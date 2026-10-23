@@ -39,7 +39,17 @@
          is read once per frame and applied to the globe, the mark, the markers
          and the page together, so none of them can drift against the others
          during a fling. -->
-    <div id="scroller" aria-hidden="true"><div id="scroller-track"></div></div>
+    <div id="scroller" aria-hidden="true">
+      <div id="scroller-track">
+        <!-- The overview is two screens; these are where a scroll comes to rest. -->
+        <i class="snap"></i><i class="snap snap--2"></i>
+      </div>
+    </div>
+
+    <!-- Phone only: darkens the scene as the second screen rises over it, so
+         the globe reads as falling back into the sky rather than as a picture
+         behind the text. -->
+    <div id="recede" aria-hidden="true"></div>
 
     <!-- Everything below floats above the canvas in its own compositor layer. -->
     <div id="ui">
@@ -75,6 +85,8 @@
         </button>
 
         <p id="enter-cue" aria-hidden="true"><i></i><span></span><i></i></p>
+        <!-- Phone only: the way to the figures. -->
+        <button id="scroll-cue" type="button"><i></i></button>
 
         <!-- Division tiles are generated from src/content/divisions.ts -->
         <div id="hotspots" role="group" aria-label="Business divisions"></div>

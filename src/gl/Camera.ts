@@ -99,6 +99,17 @@ export class Camera {
   phoneFit: { R: number; cy: number } | null = null;
   /** Page scroll in CSS px, applied to the aim every frame (phone only). */
   scrollY = 0;
+  /**
+   * Phone overview, 0..1: how far the globe has drawn back behind the second
+   * screen. Driven directly by the scroll position, so it follows the finger
+   * both ways. The globe does not scroll with the page — it stays where it
+   * is, backs away, and drifts to the middle of the screen, and the figures
+   * rise over it.
+   */
+  recede = 0;
+  /** Where the globe comes to rest on the second screen, and how far back. */
+  recedeY = 0;
+  recedeDepth = 0.75;
 
   private height = 1;
   private pointer = new Vector2();
@@ -162,7 +173,7 @@ export class Camera {
       this.globeRadiusPx = this.phoneFit.R;
       this.layout = 'ring';
       this.ringScale = 1;
-      this.lookY = this.phoneLookY();
+      this.lookY = this.phoneLookY(this.distance);
       this.cam.updateProjectionMatrix();
       return;
     }
@@ -220,10 +231,12 @@ export class Camera {
    * current scroll. Moving the camera rather than the globe keeps the world
    * root free for the division view's own drop and zoom.
    */
-  private phoneLookY(): number {
+  private phoneLookY(d: number): number {
     const fit = this.phoneFit!;
-    const atRest = this.focal / this.distance;
-    return -(this.height / 2 - (fit.cy - this.scrollY)) / atRest;
+    const target = fit.cy + (this.recedeY - fit.cy) * this.recede;
+    // One world unit at the origin spans focal / d pixels at the current
+    // distance, recede included.
+    return -(this.height / 2 - target) / (this.focal / d);
   }
 
   setPointer(nx: number, ny: number): void {
@@ -235,9 +248,12 @@ export class Camera {
     const k = 1 - Math.pow(0.001, dt * 2.6);
     this.smooth.lerp(this.pointer, k);
 
-    if (this.phoneFit) this.lookY = this.phoneLookY();
+    // Backing the camera away rather than scaling the globe: the sphere
+    // shrinks in true perspective and the sky behind it moves with it, which
+    // is what makes it read as distance instead of as a smaller picture.
+    const d = this.distance * this.dolly * (this.phoneFit ? 1 + this.recedeDepth * this.recede : 1);
+    if (this.phoneFit) this.lookY = this.phoneLookY(d);
 
-    const d = this.distance * this.dolly;
     this.cam.position.set(this.smooth.x * 0.42, this.smooth.y * 0.3 + this.lookY, d);
     this.cam.lookAt(0, this.lookY, 0);
     // After the aim, so it turns about the line of sight rather than tipping

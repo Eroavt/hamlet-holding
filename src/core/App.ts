@@ -21,7 +21,15 @@ import { Legal } from '@/ui/Legal';
 import { GlobeSwipe } from '@/ui/GlobeSwipe';
 import { Kpis } from '@/ui/Kpis';
 import { flyText } from '@/ui/Flight';
-import { phoneDetailPlacement, phoneTextLimit, solvePhone, type PhoneSolution } from '@/ui/PhoneLayout';
+import { PageDrag } from '@/ui/PageDrag';
+import {
+  markGap,
+  phoneDetailPlacement,
+  phoneHeaderTop,
+  phoneTextLimit,
+  solvePhone,
+  type PhoneSolution,
+} from '@/ui/PhoneLayout';
 
 import { DIVISIONS, divisionBySlug, type Division } from '@/content/divisions';
 import { detectLang, dict, rememberLang, type Dictionary, type Lang } from '@/content/i18n';
@@ -92,6 +100,10 @@ export class App {
   private scrollers: ((v: number) => void)[] = [];
   /** Direction of the last swipe, so the copy slides the way the finger went. */
   private pendingDir: 1 | -1 | null = null;
+  private recedeEl = document.getElementById('recede')!;
+  private scrollCue = document.getElementById('scroll-cue') as HTMLButtonElement;
+  /** Whether the figures have counted up since the overview was last entered. */
+  private counted = false;
 
   private centre = { x: 0, y: 0 };
   private tmpA = new Vector3();
@@ -206,6 +218,12 @@ export class App {
       gsap.quickSetter(document.querySelector(sel)!, 'y', 'px') as (v: number) => void,
     );
     this.backBtn.addEventListener('click', () => this.back());
+    const drag = new PageDrag(this.ui, this.scroller);
+    drag.active = () => !!this.phone && this.stage.stage === 'select' && !this.revealing;
+    drag.screen = () => this.viewport.height;
+    this.scrollCue.addEventListener('click', () => {
+      this.scroller.scrollTo({ top: this.viewport.height, behavior: this.reduced ? 'auto' : 'smooth' });
+    });
 
     new Cursor();
 
@@ -233,6 +251,7 @@ export class App {
     this.legal.setCopy(this.copy);
     this.kpis.setCopy(this.copy, this.isPhone);
     this.backLabel.textContent = this.copy.overviewLabel;
+    this.scrollCue.setAttribute('aria-label', this.copy.kpiHeading);
     this.backBtn.setAttribute('aria-label', this.copy.backLabel);
     this.enterCue.textContent = this.copy.enterCue;
     this.refreshLogoLabel();
@@ -262,6 +281,18 @@ export class App {
   private solvePhoneLayout(): void {
     const { width, height, form } = this.viewport;
     const de = document.documentElement;
+
+    // Portrait: the first screen is the mark and the constellation and nothing
+    // else, so the two are centred as one group by moving the header down.
+    // The constellation's height does not depend on where it hangs, so a
+    // probe solve at the top of the page measures it.
+    if (form === 'phone') {
+      const probe = solvePhone(form, width, height, 0, 0)!;
+      const markH = document.getElementById('anchor-header')!.offsetHeight;
+      const top = phoneHeaderTop(height, width, markH, probe.bandBottom - markGap(width));
+      de.style.setProperty('--ph-top', `${top}px`);
+    }
+
     // The header scrolls with the page; measure it as if it were at the top.
     const headerBottom = this.headerEl.getBoundingClientRect().bottom + this.scrollY;
 
@@ -284,8 +315,9 @@ export class App {
       }
     }
     this.phone = sol!;
-    const band = sol!.bandBottom - headerBottom + (form === 'phone' ? 30 : 24);
-    de.style.setProperty('--ph-band', `${Math.round(band)}px`);
+    // The first screen is exactly one screen tall; the second starts below it.
+    de.style.setProperty('--ph-h', `${Math.round(height)}px`);
+    de.style.setProperty('--ph-band', `${Math.round(height - headerBottom)}px`);
 
     this.camera.phoneFit = { R: sol!.R, cy: sol!.cy };
     this.camera.scrollY = this.scrollY;
@@ -294,8 +326,44 @@ export class App {
 
     this.hotspots.measureLabels();
     this.kpis.fit();
-    this.track.style.height = `${Math.ceil(this.ui.offsetHeight)}px`;
+    const pageH = Math.ceil(this.ui.offsetHeight);
+    this.track.style.height = `${pageH}px`;
+    // Two screens that each fit: the scroll always comes to rest on one of
+    // them, never half-way. Should the second ever outgrow the window (a very
+    // short landscape phone in Russian), it relaxes to snapping only when near.
+    this.scroller.dataset.snap = pageH > 2 * height + 2 ? 'near' : 'always';
+    this.solveRecede();
     this.logo.measure();
+    this.applyScroll(true);
+  }
+
+  /**
+   * Where the globe comes to rest on the second screen: in the space between
+   * the figures and the sign-off, small enough to keep clear of both. It is
+   * never behind the type. Where that space is too thin to hold a globe worth
+   * seeing — a phone on its side — it settles in the middle, further back,
+   * and the darkened sky carries the type over it.
+   */
+  private solveRecede(): void {
+    const { height } = this.viewport;
+    const R = this.phone!.R;
+    const onSecond = (el: Element, edge: 'top' | 'bottom'): number =>
+      el.getBoundingClientRect()[edge] + this.scrollY - height;
+    const above = onSecond(document.getElementById('kpi-list')!, 'bottom');
+    const below = onSecond(document.getElementById('footer-partner')!, 'top');
+    const room = (below - above) / 2 - 22;
+    const r = Math.min(R / 1.75, room);
+    const deep = r < 28;
+    if (!deep) {
+      this.camera.recedeY = (above + below) / 2;
+      this.camera.recedeDepth = R / r - 1;
+    } else {
+      // No room for it: it falls far back and all but goes out, rather than
+      // sitting behind a figure.
+      this.camera.recedeY = height / 2;
+      this.camera.recedeDepth = 2.4;
+    }
+    document.documentElement.toggleAttribute('data-recede-deep', deep);
   }
 
   private leavePhoneLayout(): void {
@@ -319,6 +387,38 @@ export class App {
     this.camera.scrollY = s;
     this.logo.setScroll(s);
     for (const set of this.scrollers) set(-s);
+
+    // The second screen rising is the globe falling back: one number, read
+    // straight off the scroll, so it follows the finger in both directions.
+    const r = this.phone ? Math.min(1, Math.max(0, s / this.viewport.height)) : 0;
+    this.camera.recede = r;
+    this.recedeEl.style.opacity = String(r);
+    // The divisions belong to the first screen. They go early, so they are
+    // never small, faint type sitting behind the figures.
+    this.hotspots.setRecede(Math.max(0, 1 - r / 0.42));
+    this.scrollCue.style.opacity = String(Math.max(0, 1 - r * 4));
+    const second = r > 0.5;
+    document.documentElement.toggleAttribute('data-second', second);
+    // Counted as they arrive, not while they are off screen.
+    if (r > 0.55 && !this.counted) {
+      this.counted = true;
+      this.kpis.countUp();
+    }
+  }
+
+  /**
+   * Scrolls the phone page by script. Snapping is lifted for the duration:
+   * every intermediate position a tween writes would otherwise be pulled to
+   * the nearest screen, and the move would stutter between the two.
+   */
+  private scrollPageTo(top: number, duration: number): gsap.core.Tween {
+    this.scroller.dataset.free = '';
+    return gsap.to(this.scroller, {
+      scrollTop: top,
+      duration,
+      ease: 'power2.inOut',
+      onComplete: () => delete this.scroller.dataset.free,
+    });
   }
 
   /**
@@ -505,7 +605,8 @@ export class App {
     // running by the time the band is legible. `call` rather than `add`: the
     // latter is for children, and a bare function handed to it does not get
     // scheduled reliably at a position.
-    tl.call(() => this.kpis.countUp(), undefined, 2.3);
+    // On a phone the figures are on the second screen and count when seen.
+    tl.call(() => !this.isPhone && this.kpis.countUp(), undefined, 2.3);
   }
 
   private enterInstantly(): void {
@@ -677,7 +778,7 @@ export class App {
     // A visitor who has scrolled down is first brought back to the top, so the
     // descent always starts from the composition it was designed from.
     const lead = this.reduced ? 0 : this.scrollY > 2 ? 0.35 : 0;
-    if (lead) tl.to(this.scroller, { scrollTop: 0, duration: lead, ease: 'power2.inOut' }, 0);
+    if (lead) tl.add(this.scrollPageTo(0, lead), 0);
 
     if (this.reduced) return this.selectPhoneReduced(d, fit, tl);
 
@@ -770,7 +871,7 @@ export class App {
     // Held until the constellation is home: the lower markers ride in from
     // below and would otherwise cross the figures on their way.
     tl.to([this.kpis.el, this.footer], { opacity: 1, duration: 0.5, ease: 'power2.out' }, 0.9);
-    tl.call(() => this.kpis.countUp(), undefined, 0.9);
+    tl.call(() => (this.counted = false), undefined, 0.9);
   }
 
   /**
@@ -848,7 +949,7 @@ export class App {
     this.hotspots.el.style.pointerEvents = 'none';
     // The sequence is framed on the screen, not on the page.
     document.documentElement.dataset.reveal = '';
-    if (this.phone && this.scrollY > 0) gsap.to(this.scroller, { scrollTop: 0, duration: 0.45, ease: 'power2.inOut' });
+    if (this.phone && this.scrollY > 0) this.scrollPageTo(0, 0.45);
 
     const chrome = [this.topbar, this.footer, this.kpis.el, this.hotspots.el, this.hotspots.svg];
     const tl = gsap.timeline({ defaults: { overwrite: 'auto' } });
