@@ -1,5 +1,5 @@
 import gsap from 'gsap';
-import { DIVISIONS, type Division } from '@/content/divisions';
+import type { Division } from '@/content/divisions';
 import type { Dictionary } from '@/content/i18n';
 
 /**
@@ -38,15 +38,7 @@ export class DetailPanel {
    */
   fill(division: Division, d: Dictionary, phone = false): void {
     const copy = d.divisions[division.id];
-    const n = DIVISIONS.indexOf(division) + 1;
-    const pad = (v: number): string => String(v).padStart(2, '0');
     this.eyebrow.textContent = d.eyebrow;
-    if (phone) {
-      const count = document.createElement('span');
-      count.className = 'detail-count';
-      count.textContent = `${pad(n)} / ${pad(DIVISIONS.length)}`;
-      this.eyebrow.append(' ', count);
-    }
     this.title.textContent = phone ? copy.label : copy.title;
     this.body.textContent = copy.body;
     this.body.scrollTop = 0;

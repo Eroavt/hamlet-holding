@@ -35,11 +35,11 @@ export const IMPRINT_DE: LegalDoc = {
     { t: 'p', text: 'Bildnachweis: Hamlet Holding GmbH' },
     {
       t: 'p',
-      text: 'Die HS Projekt GmbH wird im Bereich Website & Onlinemarketing von der Agentur für Marketing & digitale Kommunikation greiterundcie. aus Kempten im Allgäu betreut.',
+      text: 'Die Hamlet Holding GmbH wird im Bereich Website & Onlinemarketing von der Agentur für Marketing & digitale Kommunikation greiterundcie. aus Kempten im Allgäu betreut.',
     },
     {
       t: 'small',
-      text: '*) Die Angaben dieses Impressums gelten auch für sämtliche Social-Media-Profile der HS Projekt GmbH wie z. B. bei: XING, LinkedIn, Facebook, Instagram etc.',
+      text: '*) Die Angaben dieses Impressums gelten auch für sämtliche Social-Media-Profile der Hamlet Holding GmbH wie z. B. bei: XING, LinkedIn, Facebook, Instagram etc.',
     },
 
     { t: 'h2', text: 'Online-Streitbeilegung' },
