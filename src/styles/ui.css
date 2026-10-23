@@ -471,7 +471,8 @@
 
 #detail-body {
   margin: 0;
-  font-size: clamp(13px, 1.15vw, 15px);
+  /* Jost runs small for its size; one step up keeps the reading size. */
+  font-size: clamp(14px, 1.2vw, 16px);
   line-height: 1.65;
   color: var(--text-dim);
   max-width: 62ch;
@@ -514,12 +515,14 @@
   gap: 26px;
 }
 
+/* Quiet, but findable: the statutory links have to be easy to recognise
+   (§ 5 DDG), and at 8.5 px and 16 % white they were not. */
 #footer-links a {
   position: relative;
-  font-size: 8.5px;
-  letter-spacing: 0.24em;
+  font-size: 10px;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.16);
+  color: rgba(255, 255, 255, 0.5);
   transition: color 0.35s var(--ease-out);
 }
 
@@ -531,7 +534,7 @@
 
 #footer-links a:hover,
 #footer-links a:focus-visible {
-  color: rgba(255, 255, 255, 0.62);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 /* ==================================================== key figures (overview) */

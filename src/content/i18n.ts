@@ -18,8 +18,6 @@ export interface Dictionary {
   backLabel: string;
   /** Short form of backLabel for the phone's back button. */
   overviewLabel: string;
-  /** Touch-only invitation under the mark on the intro screen. */
-  enterCue: string;
   eyebrow: string;
   /** Legal entity name — never translated. */
   company: string;
