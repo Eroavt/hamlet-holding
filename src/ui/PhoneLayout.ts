@@ -38,6 +38,9 @@ export interface PhoneSolution {
  */
 export const CUE_RESERVE = 64;
 
+/** Design horizontal offset of the four icons, as a share of the width. */
+export const PHONE_AX = 0.29;
+
 /** Air between the mark and the first row of labels. */
 export const markGap = (W: number): number => Math.round(W * 0.09);
 
@@ -59,6 +62,9 @@ export function solvePhone(
   height: number,
   headerBottom: number,
   widestLabel: number,
+  /** Portrait: horizontal offset of the icons from the centre, when the
+   *  labels need it moved from its design value (see App.phoneAx). */
+  axOverride?: number,
 ): PhoneSolution | null {
   if (form === 'phone') {
     const W = width;
@@ -70,7 +76,7 @@ export function solvePhone(
     // Width alone decides the composition. The address bar changes the height
     // on every scroll, and the globe must not breathe with it.
     const R = Math.round(W * 0.235);
-    const ax = W * 0.29;
+    const ax = axOverride ?? W * PHONE_AX;
     // The icon's corner has to clear the sphere — its half-diagonal plus air.
     const dMin = R + ic * Math.SQRT1_2 + 8;
     const ay = Math.sqrt(Math.max(dMin * dMin - ax * ax, (ic / 2 + 6) ** 2));

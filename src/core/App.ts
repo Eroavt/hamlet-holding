@@ -23,6 +23,7 @@ import { Kpis } from '@/ui/Kpis';
 import { flyText } from '@/ui/Flight';
 import { PageDrag } from '@/ui/PageDrag';
 import {
+  PHONE_AX,
   markGap,
   phoneDetailPlacement,
   phoneHeaderTop,
@@ -48,6 +49,9 @@ const DETAIL_TOP = 0.16;
  */
 const DETAIL_IN_PACE = 0.66;
 const DETAIL_OUT_PACE = 0.88;
+/** Letter-spacing range of the phone division labels, in em. */
+const TRACK_MAX = 0.15;
+const TRACK_MIN = 0.07;
 /** Seconds the mark holds on a phone before the intro plays by itself. */
 const AUTO_ENTER = 2.4;
 /** The phone descent is choreographed at its own speed; see selectPhone(). */
@@ -286,8 +290,17 @@ export class App {
     // else, so the two are centred as one group by moving the header down.
     // The constellation's height does not depend on where it hangs, so a
     // probe solve at the top of the page measures it.
+    let ax: number | undefined;
     if (form === 'phone') {
-      const probe = solvePhone(form, width, height, 0, 0)!;
+      // Where the icons sit sideways is decided by the labels, measured at
+      // full size: centred on their icons, they need room both between the
+      // pair and towards the screen edge, and on a narrow phone those two pull
+      // in opposite directions. Within that window the design position wins.
+      const base = solvePhone(form, width, height, 0, 0)!;
+      this.hotspots.setPhone(base);
+      de.style.setProperty('--mk-track', `${TRACK_MAX}em`);
+      ax = this.phoneAx(width);
+      const probe = solvePhone(form, width, height, 0, 0, ax)!;
       const markH = document.getElementById('anchor-header')!.offsetHeight;
       const top = phoneHeaderTop(height, width, markH, probe.bandBottom - markGap(width));
       de.style.setProperty('--ph-top', `${top}px`);
@@ -300,18 +313,38 @@ export class App {
     // solve itself picks — a second pass settles it.
     let sol: PhoneSolution | null = null;
     for (let pass = 0; pass < 2; pass++) {
-      sol = solvePhone(form, width, height, headerBottom, this.hotspots.widestLabel());
+      sol = solvePhone(form, width, height, headerBottom, this.hotspots.widestLabel(), ax);
       if (!sol) return;
       this.hotspots.setPhone(sol);
     }
-    // A pair of labels that cannot share its row steps the type down — all
-    // four together, so the composition stays one size.
+    // Labels that do not fit — centred, the longest Russian words meet in
+    // the middle or reach the screen edge on a narrow phone — first give up
+    // tracking, which they have to spare, and only then size. All four
+    // together, so the composition stays one size.
     if (form === 'phone') {
-      for (let pass = 0; pass < 3; pass++) {
-        const fill = this.hotspots.rowFill();
-        if (fill <= 1) break;
-        sol = { ...sol!, fs: Math.max(9, (sol!.fs / fill) * 0.98) };
-        this.hotspots.setPhone(sol);
+      const setTrack = (em: number): void => de.style.setProperty('--mk-track', `${em}em`);
+      setTrack(TRACK_MAX);
+      if (this.hotspots.rowFill() > 1) {
+        setTrack(TRACK_MIN);
+        if (this.hotspots.rowFill() <= 1) {
+          // Somewhere in between fits: find the most open tracking that does.
+          let lo = TRACK_MIN;
+          let hi = TRACK_MAX;
+          for (let i = 0; i < 6; i++) {
+            const mid = (lo + hi) / 2;
+            setTrack(mid);
+            if (this.hotspots.rowFill() <= 1) lo = mid;
+            else hi = mid;
+          }
+          setTrack(lo);
+        } else {
+          for (let pass = 0; pass < 3; pass++) {
+            const fill = this.hotspots.rowFill();
+            if (fill <= 1) break;
+            sol = { ...sol!, fs: Math.max(9, (sol!.fs / fill) * 0.98) };
+            this.hotspots.setPhone(sol);
+          }
+        }
       }
     }
     this.phone = sol!;
@@ -335,6 +368,27 @@ export class App {
     this.solveRecede();
     this.logo.measure();
     this.applyScroll(true);
+  }
+
+  /**
+   * Horizontal offset of the portrait icons. Each row's two labels must not
+   * meet in the middle (the offset has to be at least half their combined
+   * width plus a gap) and the widest must not reach the screen edge (at most
+   * half the screen less its half-width and a margin). The design value is
+   * kept whenever it lies in that window; if the window is empty, the middle
+   * of it, and the type gives way from there.
+   */
+  private phoneAx(width: number): number {
+    const halves = this.hotspots.labelHalves();
+    let need = 0;
+    for (const sy of [-1, 1]) {
+      const row = halves.filter((h) => h.sy === sy);
+      need = Math.max(need, (row.reduce((s, h) => s + h.half, 0) + 16) / 2);
+    }
+    const room = width / 2 - 10 - Math.max(...halves.map((h) => h.half));
+    const design = width * PHONE_AX;
+    if (need <= room) return Math.min(room, Math.max(need, design));
+    return (need + room) / 2;
   }
 
   /**
