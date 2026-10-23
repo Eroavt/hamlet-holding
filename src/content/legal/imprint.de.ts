@@ -1,7 +1,13 @@
 import type { LegalDoc } from './types';
 
 /**
- * Impressum, transcribed verbatim from the client's Impressum.docx.
+ * Impressum, transcribed from the client's Impressum.docx.
+ *
+ * Departures from the source, all approved by the client (Oct 2026): the
+ * company is named Hamlet Holding GmbH throughout (the document had been
+ * taken over from the HS Projekt GmbH), the sentence naming that company's
+ * web agency is removed, and § 5 TMG reads § 5 DDG — the TMG was replaced by
+ * the Digitale-Dienste-Gesetz in May 2024.
  *
  * As with the privacy notice, the wording is untouched — only the structure is
  * restored. The source ran every disclaimer heading straight into its body
@@ -11,7 +17,7 @@ import type { LegalDoc } from './types';
 export const IMPRINT_DE: LegalDoc = {
   title: 'Impressum',
   blocks: [
-    { t: 'lead', text: 'Betreiber dieser Website & Social-Media-Profile* gemäß § 5 TMG:' },
+    { t: 'lead', text: 'Betreiber dieser Website & Social-Media-Profile* gemäß § 5 DDG:' },
     {
       t: 'address',
       lines: [
@@ -33,10 +39,6 @@ export const IMPRINT_DE: LegalDoc = {
       text: 'Verantwortlich i. S. d. § 18 Abs. 2 MStV für die Inhalte: Hamlet Avtandilyan (Adresse wie oben)',
     },
     { t: 'p', text: 'Bildnachweis: Hamlet Holding GmbH' },
-    {
-      t: 'p',
-      text: 'Die Hamlet Holding GmbH wird im Bereich Website & Onlinemarketing von der Agentur für Marketing & digitale Kommunikation greiterundcie. aus Kempten im Allgäu betreut.',
-    },
     {
       t: 'small',
       text: '*) Die Angaben dieses Impressums gelten auch für sämtliche Social-Media-Profile der Hamlet Holding GmbH wie z. B. bei: XING, LinkedIn, Facebook, Instagram etc.',
