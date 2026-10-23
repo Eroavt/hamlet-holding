@@ -249,20 +249,35 @@ export class Hotspots {
   }
 
   /**
-   * Largest share of its row's span that a pair of labels takes up, gap
-   * included. Above 1, the two labels of a row would run into one another —
-   * the longest Russian pair does on a 320 px screen.
+   * How far the labels overflow the room they have, as a ratio (above 1 means
+   * they do not fit). Labels are centred on their icons, so two limits apply:
+   * the pair in a row must not meet in the middle, and no label may run off
+   * the edge of the screen. The longest Russian labels break both on a narrow
+   * phone at full size; App scales the type by this ratio.
    */
   rowFill(): number {
     if (!this.phone) return 0;
-    const span = 2 * this.phone.axR * this.phone.R + this.phone.ic;
+    const ax = this.phone.axR * this.phone.R;
+    const W = window.innerWidth;
+    const margin = 10;
     let worst = 0;
     for (const sy of [-1, 1]) {
       const row = this.tiles.filter((t) => t.sy === sy);
-      const need = row.reduce((sum, t) => sum + t.name.scrollWidth, 0) + 16;
-      worst = Math.max(worst, need / span);
+      const halves = row.map((t) => t.name.scrollWidth / 2);
+      // Centres are 2·ax apart; the two halves plus a gap must fit between.
+      worst = Math.max(worst, (halves.reduce((s, h) => s + h, 0) + 16) / (2 * ax));
+      for (const t of row) {
+        const centre = W / 2 + t.sx * ax;
+        const room = Math.min(centre, W - centre) - margin;
+        worst = Math.max(worst, t.name.scrollWidth / 2 / room);
+      }
     }
     return worst;
+  }
+
+  /** Half the width of each label, with its corner, at the current type. */
+  labelHalves(): { sx: number; sy: number; half: number }[] {
+    return this.tiles.map((t) => ({ sx: t.sx, sy: t.sy, half: t.name.scrollWidth / 2 }));
   }
 
   /** Widest label, for the landscape solve — measured, since it is per language. */
@@ -273,22 +288,19 @@ export class Hotspots {
   /**
    * Where each label sits relative to its marker, for the orbit mask. Labels
    * only move with the marker as a whole, so this is measured on layout, not
-   * per frame. Uses offsets rather than rects, since a transform anywhere up
-   * the tree would otherwise leak into the numbers.
+   * per frame.
    */
   measureLabels(): void {
     this.drawn = '';
     for (const t of this.tiles) {
-      const g = t.glyph;
-      const n = t.name;
-      const gx = g.offsetLeft + g.offsetWidth / 2;
-      const gy = g.offsetTop + g.offsetHeight / 2;
-      t.labelBox = {
-        x: n.offsetLeft - gx - 6,
-        y: n.offsetTop - gy - 4,
-        w: n.offsetWidth + 12,
-        h: n.offsetHeight + 8,
-      };
+      // Screen rects, relative to the glyph: labels are centred with a
+      // transform, which offsetLeft would not see. Both sit inside the same
+      // marker, so any transform on the marker itself cancels out.
+      const g = t.glyph.getBoundingClientRect();
+      const n = t.name.getBoundingClientRect();
+      const gx = g.left + g.width / 2;
+      const gy = g.top + g.height / 2;
+      t.labelBox = { x: n.left - gx - 6, y: n.top - gy - 4, w: n.width + 12, h: n.height + 8 };
     }
   }
 

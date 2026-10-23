@@ -357,16 +357,26 @@ html[data-form^='phone'] .hs.is-pressed .hs__glyph svg {
   filter: drop-shadow(0 0 8px rgba(200, 232, 255, 0.95));
 }
 
-/* Labels sit outside each row and are anchored to the icon's *outer* edge:
-   centred, the longest Russian words run off the screen. Anchored outward,
-   every label grows into the free space towards the centre. */
+/* Labels sit outside each row — above the upper pair, below the lower pair —
+   centred on their icon. Long Russian words would run off a narrow screen
+   centred like this; App steps the four down together until the widest fits
+   (see Hotspots.rowFill), so nothing is ever cut off. */
 html[data-form^='phone'] #hotspots:not(.is-rail) .hs__name {
   position: absolute;
   font-size: var(--mk-fs);
   line-height: 1.34;
-  letter-spacing: 0.15em;
+  letter-spacing: var(--mk-track, 0.15em);
   white-space: pre;
+  text-align: center;
   color: rgba(255, 255, 255, 0.92);
+}
+
+html[data-form='phone'] #hotspots:not(.is-rail) .hs__name {
+  left: 50%;
+  transform: translateX(-50%);
+  /* Tracking trails every line; the same space in front centres the ink,
+     not the box. */
+  padding-left: var(--mk-track, 0.15em);
 }
 
 html[data-form='phone'] .hs[data-v='up'] .hs__name {
@@ -377,17 +387,6 @@ html[data-form='phone'] .hs[data-v='down'] .hs__name {
   top: calc(100% + var(--mk-gap));
 }
 
-html[data-form='phone'] .hs[data-h='left'] .hs__name {
-  left: 0;
-  text-align: left;
-}
-
-html[data-form='phone'] .hs[data-h='right'] .hs__name {
-  right: 0;
-  margin-right: -0.15em;
-  text-align: right;
-}
-
 /* Landscape: the constellation turns sideways, labels on the outside. */
 html[data-form='phone-land'] #hotspots:not(.is-rail) .hs__name {
   top: 50%;
@@ -396,12 +395,12 @@ html[data-form='phone-land'] #hotspots:not(.is-rail) .hs__name {
 
 html[data-form='phone-land'] .hs[data-h='left'] .hs__name {
   right: calc(100% + var(--mk-gap));
-  text-align: right;
+  padding-left: var(--mk-track, 0.15em);
 }
 
 html[data-form='phone-land'] .hs[data-h='right'] .hs__name {
   left: calc(100% + var(--mk-gap));
-  text-align: left;
+  padding-left: var(--mk-track, 0.15em);
 }
 
 /* The engine's region nodes are a desktop device; on a phone the beam
