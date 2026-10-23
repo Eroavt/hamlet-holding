@@ -31,6 +31,26 @@ export interface PhoneSolution {
   bandBottom: number;
 }
 
+/**
+ * Space kept free at the bottom of the first screen for the scroll cue. The
+ * overview is two screens: the constellation alone, then the figures rising
+ * over a receding globe — see App.applyScroll.
+ */
+export const CUE_RESERVE = 64;
+
+/** Air between the mark and the first row of labels. */
+export const markGap = (W: number): number => Math.round(W * 0.09);
+
+/**
+ * Header top padding that centres the mark and the constellation together in
+ * the first screen (above the scroll cue). `groupBelowMark` is the height of
+ * the constellation from the first label to the last.
+ */
+export function phoneHeaderTop(height: number, width: number, markH: number, groupBelowMark: number): number {
+  const group = markH + markGap(width) + groupBelowMark;
+  return Math.round((height - CUE_RESERVE - group) / 2);
+}
+
 const clamp = (lo: number, v: number, hi: number): number => Math.min(hi, Math.max(lo, v));
 
 export function solvePhone(
@@ -49,15 +69,18 @@ export function solvePhone(
 
     // Width alone decides the composition. The address bar changes the height
     // on every scroll, and the globe must not breathe with it.
-    const R = Math.round(W * 0.26);
-    const ax = W * 0.295;
+    const R = Math.round(W * 0.235);
+    const ax = W * 0.29;
     // The icon's corner has to clear the sphere — its half-diagonal plus air.
     const dMin = R + ic * Math.SQRT1_2 + 8;
     const ay = Math.sqrt(Math.max(dMin * dMin - ax * ax, (ic / 2 + 6) ** 2));
 
-    const topLabel = headerBottom + Math.round(W * 0.04);
-    const cy = Math.round(topLabel + labelH + gap + ic / 2 + ay);
-    const bandBottom = cy + ay + ic / 2 + gap + labelH;
+    // Hung a fixed distance under the mark. The first screen holds nothing
+    // else, so App centres the mark and the constellation together, as one
+    // group, by moving the header down — see phoneHeaderTop().
+    const half = ay + ic / 2 + gap + labelH;
+    const cy = Math.round(headerBottom + markGap(W) + half);
+    const bandBottom = cy + half;
     return { R, cx: W / 2, cy, axR: ax / R, ayR: ay / R, ic, fs, gap, bandBottom };
   }
 
@@ -67,9 +90,9 @@ export function solvePhone(
     const ic = Math.round(clamp(44, H * 0.135, 54));
     const fs = clamp(10.5, H * 0.03, 12);
     const gap = 14;
-    const R = Math.round(Math.min(H * 0.27, W * 0.14));
+    const R = Math.round(Math.min(H * 0.243, W * 0.126));
     const cx = W / 2;
-    const cy = Math.round(headerBottom + (H - headerBottom) / 2 + 6);
+    const cy = Math.round(headerBottom + (H - 36 - headerBottom) / 2 + 6);
 
     // Divisions either side of the globe, labels on the outside. The pair is
     // pushed out by a share of the width, but never so far that the widest

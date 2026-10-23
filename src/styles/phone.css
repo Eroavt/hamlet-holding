@@ -14,6 +14,8 @@
 /* ------------------------------------------------------- phone-only nodes */
 
 #scroller,
+#recede,
+#scroll-cue,
 #back,
 #enter-cue,
 .orbit,
@@ -65,15 +67,136 @@ html[data-form^='phone'][data-stage='detail'] #scroller {
 }
 
 #scroller-track {
+  position: relative;
   width: 1px;
 }
 
-/* The page grows to its content. Nothing inside it is natively scrolled: the
-   blocks are moved by App.applyScroll, in the same frame as the globe. */
+/* Two screens, and a scroll always comes to rest on one of them. While the
+   finger is down it follows exactly; snapping only decides where it settles,
+   so the globe can never be left half-receded behind half-risen figures. */
+html[data-form^='phone'] #scroller[data-snap='always'] {
+  scroll-snap-type: y mandatory;
+}
+
+html[data-form^='phone'] #scroller[data-snap='near'] {
+  scroll-snap-type: y proximity;
+}
+
+/* Scripted scrolls (back to the top before a descent) move freely. */
+html[data-form^='phone'] #scroller[data-free] {
+  scroll-snap-type: none;
+}
+
+/* Controls sit above the scroller; a drag that starts on one is carried to it
+   by ui/PageDrag, which needs every pointer move rather than a browser pan. */
+html[data-form^='phone'][data-stage='select'] #ui :is(a, button) {
+  touch-action: none;
+}
+
+.snap {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 1px;
+  scroll-snap-align: start;
+}
+
+.snap--2 {
+  top: var(--ph-h, 100vh);
+}
+
+/* Nothing inside the page is natively scrolled: the blocks are moved by
+   App.applyScroll, in the same frame as the globe recedes.
+
+   The first screen is the header and the constellation, exactly one window
+   tall. The second is the figures, centred in what the sign-off — partner,
+   company, statutory links — leaves free at the bottom. */
 html[data-form^='phone'] #ui {
   bottom: auto;
-  min-height: 100%;
-  grid-template-rows: auto var(--ph-band, 60vh) auto auto;
+  min-height: calc(var(--ph-h, 100vh) * 2);
+  grid-template-rows: auto var(--ph-band, 60vh) 1fr auto;
+}
+
+/* The scene falling back. Darkest at the edges, so the small globe left in
+   the middle still glows faintly through the figures. Opacity is the scroll. */
+html[data-form^='phone'] #recede {
+  display: block;
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(
+    120% 75% at 50% 50%,
+    rgba(1, 2, 8, 0.5) 0%,
+    rgba(1, 2, 8, 0.74) 55%,
+    rgba(1, 2, 8, 0.86) 100%
+  );
+}
+
+html[data-recede-deep] #recede {
+  background: rgba(1, 2, 8, 0.86);
+}
+
+/* The way to the second screen: a hairline with a light running down it. */
+html[data-form^='phone'][data-stage='select'] #scroll-cue {
+  display: grid;
+  place-items: center;
+  position: fixed;
+  left: 50%;
+  bottom: calc(env(safe-area-inset-bottom) + 10px);
+  width: 44px;
+  height: 52px;
+  margin-left: -22px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html[data-form='phone-land'][data-stage='select'] #scroll-cue {
+  bottom: calc(env(safe-area-inset-bottom) + 2px);
+  height: 40px;
+}
+
+#scroll-cue i {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 30px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+html[data-form='phone-land'] #scroll-cue i {
+  height: 22px;
+}
+
+#scroll-cue i::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 45%;
+  background: linear-gradient(to bottom, transparent, rgba(160, 220, 255, 0.95));
+  transform: translateY(-100%);
+  animation: cue-run 2.4s 1s var(--ease-in-out) infinite;
+}
+
+@keyframes cue-run {
+  0% {
+    transform: translateY(-100%);
+  }
+  70%,
+  100% {
+    transform: translateY(240%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #scroll-cue i::after {
+    animation: none;
+    transform: translateY(60%);
+  }
 }
 
 html[data-form^='phone'] #stage {
@@ -82,9 +205,10 @@ html[data-form^='phone'] #stage {
 
 /* ---------------------------------------------------------------- header */
 
+/* Moved down by App so the mark and the constellation sit centred together. */
 html[data-form='phone'] #topbar {
   justify-content: center;
-  padding: calc(env(safe-area-inset-top) + clamp(22px, 9vw, 44px)) var(--pad-x) 0;
+  padding: max(calc(env(safe-area-inset-top) + 22px), var(--ph-top, 0px)) var(--pad-x) 0;
 }
 
 html[data-form='phone'] #anchor-header {
@@ -624,9 +748,12 @@ html[data-form^='phone'] #detail-body.is-clipped.is-end {
 
 /* ------------------------------------------------------- figures + footer */
 
+/* Second screen, top to bottom: the figures, the receded globe in the space
+   below them, the sign-off at the foot. */
 html[data-form^='phone'] #kpi {
-  gap: 18px;
-  padding: 0 18px;
+  justify-content: flex-start;
+  gap: 22px;
+  padding: calc(env(safe-area-inset-top) + clamp(36px, 12vh, 120px)) 18px 24px;
 }
 
 html[data-form^='phone'] #kpi-heading {
@@ -697,7 +824,7 @@ html[data-form^='phone'] .kpi__unit {
 
 html[data-form^='phone'] #footer {
   gap: 2px;
-  padding: 34px 18px calc(env(safe-area-inset-bottom) + 24px);
+  padding: 0 18px calc(env(safe-area-inset-bottom) + 22px);
 }
 
 html[data-form^='phone'] #footer-partner {

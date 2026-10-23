@@ -292,6 +292,22 @@ export class Hotspots {
     }
   }
 
+  /**
+   * Phone overview: how present the constellation is while the second screen
+   * rises over it (1 = fully, 0 = gone). Set on the marker roots and the
+   * orbit's circles — elements no transition ever tweens, so this can never
+   * fight a timeline over the same property.
+   */
+  setRecede(v: number): void {
+    const o = v.toFixed(3);
+    const gone = v < 0.02;
+    for (const t of this.tiles) {
+      t.root.style.opacity = o;
+      t.root.style.visibility = gone ? 'hidden' : '';
+    }
+    for (const c of this.ring) c.style.opacity = o;
+  }
+
   /** Marks the division whose page is open, for the dock. */
   setActive(slug: string | null): void {
     for (const t of this.tiles) t.root.classList.toggle('is-active', t.division.slug === slug);
