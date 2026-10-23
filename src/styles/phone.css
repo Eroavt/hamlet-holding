@@ -629,11 +629,6 @@ html[data-form^='phone'] #detail-eyebrow {
   letter-spacing: 0.22em;
 }
 
-html[data-form^='phone'] .detail-count {
-  margin-left: 0.5em;
-  color: rgba(255, 255, 255, 0.5);
-}
-
 html[data-form^='phone'] #detail-title {
   margin: 0 0 18px;
   white-space: pre-line;

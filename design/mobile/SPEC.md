@@ -63,7 +63,7 @@ constellation turns sideways: two markers either side of the globe, labels outsi
 - Bar: `‹ Übersicht` button left (explicit back — today the only way back is tapping the
   logo), crown centre, language right.
 - Copy left-aligned (centred body text of 6+ lines reads badly): eyebrow
-  `GESCHÄFTSBEREICH 03 / 04`, title 30 px on two lines at the hyphen (24 px < 360 w),
+  title 30 px on two lines at the hyphen (24 px < 360 w),
   body 15.5 / 1.62 (was 12.5 px).
 - The globe becomes the horizon: its cap is solved from the copy's measured bottom, so
   the text never sits on the sphere. RU copy is longest — the column scrolls inside
