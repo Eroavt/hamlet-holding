@@ -48,6 +48,8 @@ const DETAIL_TOP = 0.16;
  */
 const DETAIL_IN_PACE = 0.66;
 const DETAIL_OUT_PACE = 0.88;
+/** Seconds the mark holds on a phone before the intro plays by itself. */
+const AUTO_ENTER = 2.4;
 /** The phone descent is choreographed at its own speed; see selectPhone(). */
 const PHONE_IN_PACE = 0.86;
 const PHONE_OUT_PACE = 0.95;
@@ -93,7 +95,6 @@ export class App {
   private track = document.getElementById('scroller-track')!;
   private backBtn = document.getElementById('back') as HTMLButtonElement;
   private backLabel = document.getElementById('back-label')!;
-  private enterCue = document.querySelector<HTMLElement>('#enter-cue span')!;
   private phone: PhoneSolution | null = null;
   private scrollY = 0;
   /** The blocks that scroll with the page; the rest follow through the camera. */
@@ -253,7 +254,6 @@ export class App {
     this.backLabel.textContent = this.copy.overviewLabel;
     this.scrollCue.setAttribute('aria-label', this.copy.kpiHeading);
     this.backBtn.setAttribute('aria-label', this.copy.backLabel);
-    this.enterCue.textContent = this.copy.enterCue;
     this.refreshLogoLabel();
 
     const slug = this.router.read();
@@ -510,6 +510,20 @@ export class App {
     tl.to(this.world.nebula, { intensity: 0.5, duration: 2.0, ease: 'power2.out' }, 0);
     tl.add(() => this.dismissBoot(), 0);
     tl.add(() => this.logo.awaken(), 0.7);
+
+    // Phones do not wait for a tap. A visit on a phone is short, and a screen
+    // that shows nothing until it is touched loses people at the door. The
+    // mark holds long enough to be read, then the sky collapses on its own;
+    // a tap before that simply starts it sooner. On GSAP's clock, so a tab
+    // opened in the background does not play it unseen.
+    if (this.isPhone) {
+      gsap.delayedCall(AUTO_ENTER, () => {
+        void this.matter.then(() => {
+          const legalOpen = !document.getElementById('legal')!.hidden;
+          if (this.stage.stage === 'universe' && !legalOpen) void this.enter();
+        });
+      });
+    }
   }
 
   private dismissBoot(): void {
@@ -697,6 +711,11 @@ export class App {
     });
     tl.timeScale(DETAIL_IN_PACE);
 
+    // Laid out, still invisible, before the placement is solved: measured
+    // while display:none the panel has no height, the solve falls back to an
+    // estimate, and long copy (Russian, on a 720 px laptop) ran 70 px into
+    // the sphere.
+    this.detail.prepare();
     const fit = this.detailPlacement();
 
     tl.add(this.hotspots.toRail(), 0);
@@ -1205,10 +1224,12 @@ export class App {
   private detailPlacement(): { drop: number; zoom: number } {
     const { width, height } = this.viewport;
 
-    // The panel is laid out even while it is still transparent, so its height
-    // is honest before the transition has run.
-    const panel = this.detail.el.getBoundingClientRect().height;
-    const textBottom = height * DETAIL_TOP + (panel || height * 0.26);
+    // The panel is laid out (transparent) before this runs — see select() —
+    // so its real bottom edge can be read. Deriving it from DETAIL_TOP was
+    // wrong by the header's height: `top: 16%` is a share of the stage below
+    // the header, not of the window, and the sphere rose into the last lines.
+    const rect = this.detail.el.getBoundingClientRect();
+    const textBottom = rect.height > 0 ? rect.bottom : height * DETAIL_TOP + height * 0.26;
     // Generous, because the panel may still be display:none when this is
     // solved and the fallback height is an estimate. Erring small here shows
     // up directly as the sphere crowding the copy.

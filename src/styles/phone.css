@@ -17,7 +17,6 @@
 #recede,
 #scroll-cue,
 #back,
-#enter-cue,
 .orbit,
 .beam,
 .beam__halo,
@@ -268,59 +267,6 @@ html[data-form^='phone'] #anchor-hero {
 
 html[data-form='phone-land'] #anchor-hero {
   width: min(280px, 58vh);
-}
-
-@media (hover: none) {
-  html[data-form^='phone'] #enter-cue {
-    display: flex;
-    position: fixed;
-    left: 0;
-    right: 0;
-    top: calc(50% + clamp(92px, 29vw, 128px));
-    margin: 0;
-    justify-content: center;
-    align-items: center;
-    gap: 14px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: rgba(255, 255, 255, 0.6);
-    opacity: 0;
-    pointer-events: none;
-  }
-
-  html[data-form='phone-land'] #enter-cue {
-    top: calc(50% + min(96px, 22vh));
-  }
-
-  html[data-form^='phone'][data-stage='universe'] #enter-cue {
-    animation:
-      cue-in 1.2s 2.2s var(--ease-out) forwards,
-      cue-breathe 3.6s 3.6s ease-in-out infinite;
-  }
-}
-
-#enter-cue i {
-  width: 22px;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.28);
-}
-
-@keyframes cue-in {
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes cue-breathe {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.42;
-  }
 }
 
 /* ---------------------------------------------------------- constellation */
@@ -705,7 +651,9 @@ html[data-form='phone-land'] #detail-title {
 
 html[data-form^='phone'] #detail-body {
   max-width: 60ch;
-  font-size: clamp(14.5px, 3.95vw, 16px);
+  /* Jost runs small for its size; this keeps the copy at the same reading
+     size the system face had. */
+  font-size: clamp(15px, 4.1vw, 16.5px);
   line-height: 1.6;
   color: rgba(255, 255, 255, 0.8);
   overflow-y: auto;
