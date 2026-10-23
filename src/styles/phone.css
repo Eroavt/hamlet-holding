@@ -769,6 +769,11 @@ html[data-form^='phone'] #footer {
   padding: 0 18px calc(env(safe-area-inset-bottom) + 22px);
 }
 
+/* Portrait: the sign-off sits clear of the bottom edge rather than on it. */
+html[data-form='phone'] #footer {
+  padding-bottom: calc(env(safe-area-inset-bottom) + clamp(44px, 8vh, 80px));
+}
+
 html[data-form^='phone'] #footer-partner {
   margin-bottom: 26px;
   gap: 12px;
